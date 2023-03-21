@@ -1,0 +1,18 @@
+[tool.pdm]
+
+[project]
+name = "pcp"
+version = "0.1.0"
+description = "Self-hostable coding courses/problems platform"
+authors = [
+    { name = "PixelSam123", email = "77851256+PixelSam123@users.noreply.github.com" },
+]
+dependencies = [
+    "fastapi[all]>=0.95.0",
+    "sqlalchemy>=2.0.7",
+]
+requires-python = ">=3.11"
+license = { text = "GPL-3.0" }
+
+[tool.pdm.scripts]
+dev = "uvicorn src.main:app --reload"
