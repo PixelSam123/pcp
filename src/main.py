@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
+from typing import Any
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
@@ -26,18 +27,23 @@ def get_db():
         db.close()
 
 
+def openapi_http_exception(
+    status_code_and_details: list[tuple[int, str]]
+) -> dict[int | str, dict[str, Any]]:
+    return {
+        status_code: {
+            "description": detail,
+            "content": {"application/json": {"example": {"detail": detail}}},
+        }
+        for (status_code, detail) in status_code_and_details
+    }
+
+
 @app.post(
     "/users",
     response_model=schemas.UserRead,
     tags=["users"],
-    responses={
-        400: {
-            "description": "User Already Exists",
-            "content": {
-                "application/json": {"example": {"detail": "User Already Exists"}}
-            },
-        }
-    },
+    responses=openapi_http_exception([(400, "User Already Exists")]),
 )
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.user.get_one_by_name(db=db, name=user.name)
@@ -56,14 +62,7 @@ def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     "/users/{user_name}",
     response_model=schemas.UserRead,
     tags=["users"],
-    responses={
-        404: {
-            "description": "User Not Found",
-            "content": {
-                "application/json": {"example": {"detail": "User Not Found"}},
-            },
-        }
-    },
+    responses=openapi_http_exception([(404, "User Not Found")]),
 )
 def get_user_by_name(user_name: str, db: Session = Depends(get_db)):
     db_user = crud.user.get_one_by_name(db=db, name=user_name)
