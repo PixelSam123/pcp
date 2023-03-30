@@ -4,7 +4,23 @@
 dev = "uvicorn src.main:app --reload"
 
 [tool.ruff]
-select = ["E", "F", "N", "W", "PTH", "SIM"]
+select = [
+    "F",
+    "E",
+    "W",
+    "N",
+    "UP",
+    "ANN",
+    "S",
+    "BLE",
+    "FBT",
+    "C4",
+    "DTZ",
+    "G",
+    "PIE",
+    "SIM",
+    "PTH",
+]
 
 [project]
 name = "pcp"
@@ -13,9 +29,6 @@ description = "Self-hostable coding courses/problems platform"
 authors = [
     { name = "PixelSam123", email = "77851256+PixelSam123@users.noreply.github.com" },
 ]
-dependencies = [
-    "fastapi[all]>=0.95.0",
-    "sqlalchemy>=2.0.7",
-]
+dependencies = ["fastapi[all]>=0.95.0", "sqlalchemy>=2.0.7"]
 requires-python = ">=3.11"
 license = { text = "GPL-3.0" }
