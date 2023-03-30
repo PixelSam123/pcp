@@ -1,5 +1,11 @@
 [tool.pdm]
 
+[tool.pdm.scripts]
+dev = "uvicorn src.main:app --reload"
+
+[tool.ruff]
+select = ["E", "F", "N", "W", "PTH", "SIM"]
+
 [project]
 name = "pcp"
 version = "0.1.0"
@@ -13,6 +19,3 @@ dependencies = [
 ]
 requires-python = ">=3.11"
 license = { text = "GPL-3.0" }
-
-[tool.pdm.scripts]
-dev = "uvicorn src.main:app --reload"
