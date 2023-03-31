@@ -7,7 +7,6 @@ dev = "uvicorn src.main:app --reload"
 select = [
     "F",
     "E",
-    "W",
     "N",
     "UP",
     "ANN",
