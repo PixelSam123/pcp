@@ -43,11 +43,13 @@ def openapi_http_exception(
 
 @app.post(
     "/users",
-    response_model=schemas.UserReadBrief,
+    response_model=schemas.user.ReadBrief,
     tags=["users"],
     responses=openapi_http_exception([(400, "User Already Exists")]),
 )
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)) -> models.User:
+def create_user(
+    user: schemas.user.Create, db: Session = Depends(get_db)
+) -> models.User:
     db_user = crud.user.get_one_by_name(db=db, name=user.name)
     if db_user:
         raise HTTPException(status_code=400, detail="User Already Exists")
@@ -55,7 +57,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)) -> mode
     return crud.user.create_one(db=db, user=user)
 
 
-@app.get("/users", response_model=list[schemas.UserReadBrief], tags=["users"])
+@app.get("/users", response_model=list[schemas.user.ReadBrief], tags=["users"])
 def get_users(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> list[models.User]:
@@ -64,7 +66,7 @@ def get_users(
 
 @app.get(
     "/users/{user_name}",
-    response_model=schemas.UserReadBrief,
+    response_model=schemas.user.ReadBrief,
     tags=["users"],
     responses=openapi_http_exception([(404, "User Not Found")]),
 )

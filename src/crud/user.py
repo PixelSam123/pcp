@@ -15,7 +15,7 @@ def get_multiple(db: Session, skip: int = 0, limit: int = 100) -> list[models.Us
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def create_one(db: Session, user: schemas.UserCreate) -> models.User:
+def create_one(db: Session, user: schemas.user.Create) -> models.User:
     db_user = models.User(name=user.name, password=user.password)
     db.add(db_user)
     db.commit()
