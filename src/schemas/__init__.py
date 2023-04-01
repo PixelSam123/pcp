@@ -1,1 +1,8 @@
-from . import group, user  # noqa: F401
+from . import (  # noqa: F401
+    challenge,
+    challenge_comment,
+    group,
+    submission,
+    submission_comment,
+    user,
+)
