@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from . import models
 from .database import engine
-from .routers import users
+from .routers import challenges, users
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -14,7 +14,12 @@ app = FastAPI(
             "name": "users",
             "description": "User creation, viewing and editing",
         },
+        {
+            "name": "challenges",
+            "description": "Challenge creation, viewing and editing",
+        },
     ],
 )
 
 app.include_router(users.router)
+app.include_router(challenges.router)

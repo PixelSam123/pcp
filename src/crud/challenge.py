@@ -9,6 +9,10 @@ def get_one(db: Session, challenge_id: int) -> models.Challenge:
     )
 
 
+def get_one_by_name(db: Session, name: str) -> models.Challenge:
+    return db.query(models.Challenge).filter(models.Challenge.name == name).first()
+
+
 def get_multiple(
     db: Session, skip: int = 0, limit: int = 100
 ) -> list[models.Challenge]:
