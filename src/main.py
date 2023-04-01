@@ -1,11 +1,8 @@
-from collections.abc import Generator
-from typing import Any
+from fastapi import FastAPI
 
-from fastapi import Depends, FastAPI, HTTPException
-from sqlalchemy.orm import Session
-
-from . import crud, models, schemas
-from .database import SessionLocal, engine
+from . import models
+from .database import engine
+from .routers import users
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -20,59 +17,4 @@ app = FastAPI(
     ],
 )
 
-
-def get_db() -> Generator[Session, None, None]:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def openapi_http_exception(
-    status_code_and_details: list[tuple[int, str]]
-) -> dict[int | str, dict[str, Any]]:
-    return {
-        status_code: {
-            "description": detail,
-            "content": {"application/json": {"example": {"detail": detail}}},
-        }
-        for (status_code, detail) in status_code_and_details
-    }
-
-
-@app.post(
-    "/users",
-    response_model=schemas.user.ReadBrief,
-    tags=["users"],
-    responses=openapi_http_exception([(400, "User Already Exists")]),
-)
-def create_user(
-    user: schemas.user.Create, db: Session = Depends(get_db)
-) -> models.User:
-    db_user = crud.user.get_one_by_name(db=db, name=user.name)
-    if db_user:
-        raise HTTPException(status_code=400, detail="User Already Exists")
-
-    return crud.user.create_one(db=db, user=user)
-
-
-@app.get("/users", response_model=list[schemas.user.ReadBrief], tags=["users"])
-def get_users(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
-) -> list[models.User]:
-    return crud.user.get_multiple(db=db, skip=skip, limit=limit)
-
-
-@app.get(
-    "/users/{user_name}",
-    response_model=schemas.user.ReadBrief,
-    tags=["users"],
-    responses=openapi_http_exception([(404, "User Not Found")]),
-)
-def get_user_by_name(user_name: str, db: Session = Depends(get_db)) -> models.User:
-    db_user = crud.user.get_one_by_name(db=db, name=user_name)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User Not Found")
-
-    return db_user
+app.include_router(users.router)
