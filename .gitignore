@@ -4,4 +4,4 @@ __pycache__/
 
 # PDM
 *.egg-info/
-.pdm.toml
+.pdm-python
