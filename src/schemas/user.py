@@ -13,7 +13,7 @@ class Create(Base):
 
 class ReadBrief(Base):
     id: int
-    group: group.ReadBrief
+    group: group.ReadBrief | None
 
     class Config:
         orm_mode = True
