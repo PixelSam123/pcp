@@ -12,7 +12,7 @@ class User(Base):
     password = Column(String)
 
     group_id = Column(Integer, ForeignKey("groups.id"))
-    group = relationship("Group", back_populates="users")
+    group = relationship("Group", back_populates="users", lazy="joined")
 
     challenges = relationship("Challenge", back_populates="user")
     submissions = relationship("Submission", back_populates="user")
@@ -39,7 +39,7 @@ class Challenge(Base):
     tier = Column(Integer)
 
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="challenges")
+    user = relationship("User", back_populates="challenges", lazy="joined")
 
     submissions = relationship("Submission", back_populates="challenge")
     comments = relationship("ChallengeComment", back_populates="challenge")
@@ -55,7 +55,7 @@ class Submission(Base):
     memory = Column(Integer)
 
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="submissions")
+    user = relationship("User", back_populates="submissions", lazy="joined")
     challenge_id = Column(Integer, ForeignKey("challenges.id"))
     challenge = relationship("Challenge", back_populates="submissions")
 
@@ -69,7 +69,7 @@ class ChallengeComment(Base):
     content = Column(String)
 
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="challenge_comments")
+    user = relationship("User", back_populates="challenge_comments", lazy="joined")
     challenge_id = Column(Integer, ForeignKey("challenges.id"))
     challenge = relationship("Challenge", back_populates="comments")
 
@@ -81,6 +81,6 @@ class SubmissionComment(Base):
     content = Column(String)
 
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="submission_comments")
+    user = relationship("User", back_populates="submission_comments", lazy="joined")
     submission_id = Column(Integer, ForeignKey("submissions.id"))
     submission = relationship("Submission", back_populates="comments")
