@@ -36,6 +36,7 @@ class Challenge(Base):
     name = Column(String, unique=True, index=True)
     description = Column(String)
     initial_code = Column(String)
+    test_case = Column(String)
     tier = Column(Integer)
 
     user_id = Column(Integer, ForeignKey("users.id"))
