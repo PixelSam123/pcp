@@ -37,7 +37,7 @@ def create_submission_for_challenge(
     responses=openapi_http_exception([(404, "Challenge Not Found")]),
 )
 def get_submissions_for_challenge_by_name(
-    challenge_name: str, skip: int = 0, limit: int = 0, db: Session = Depends(get_db)
+    challenge_name: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> list[models.Submission]:
     db_challenge = crud.challenge.get_one_by_name(db=db, name=challenge_name)
     if db_challenge is None:
