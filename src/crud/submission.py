@@ -11,10 +11,16 @@ def get_one(db: Session, submission_id: int) -> models.Submission:
     )
 
 
-def get_multiple(
-    db: Session, skip: int = 0, limit: int = 100
+def get_multiple_for_challenge(
+    db: Session, challenge_id: int, skip: int = 0, limit: int = 100
 ) -> list[models.Submission]:
-    return db.query(models.Submission).offset(skip).limit(limit).all()
+    return (
+        db.query(models.Submission)
+        .filter(models.Submission.challenge_id == challenge_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_one(db: Session, submission: schemas.submission.Create) -> models.Submission:
