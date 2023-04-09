@@ -30,4 +30,9 @@ authors = [
 ]
 dependencies = ["fastapi[all]>=0.95.0", "sqlalchemy>=2.0.7"]
 requires-python = ">=3.11"
+readme = "README.md"
 license = { text = "GPL-3.0" }
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
