@@ -22,6 +22,10 @@ def create_submission_for_challenge(
     if db_challenge is None:
         raise HTTPException(status_code=400, detail="Challenge Doesn't Exist")
 
+    db_user = crud.user.get_one(db=db, user_id=submission.user_id)
+    if db_user is None:
+        raise HTTPException(status_code=400, detail="User Doesn't Exist")
+
     # ...insert checks against code checker here
 
     return crud.submission.create_one(db=db, submission=submission)
