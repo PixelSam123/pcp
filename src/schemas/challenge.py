@@ -12,6 +12,7 @@ class Create(Base):
     user_id: int
     description: str
     initial_code: str
+    test_case: str
 
 
 class ReadBrief(Base):
