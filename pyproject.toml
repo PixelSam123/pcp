@@ -28,7 +28,11 @@ description = "Self-hostable coding courses/problems platform"
 authors = [
     { name = "PixelSam123", email = "77851256+PixelSam123@users.noreply.github.com" },
 ]
-dependencies = ["fastapi[all]>=0.95.0", "sqlalchemy>=2.0.7"]
+dependencies = [
+    "fastapi[all]>=0.95.0",
+    "sqlalchemy>=2.0.7",
+    "argon2-cffi>=21.3.0",
+]
 requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "GPL-3.0" }
