@@ -22,7 +22,7 @@ def create_challenge(
         raise HTTPException(status_code=400, detail="Challenge Already Exists")
 
     db_user = crud.user.get_one(db=db, user_id=challenge.user_id)
-    if not db_user:
+    if db_user is None:
         raise HTTPException(status_code=400, detail="User Doesn't Exist")
 
     return crud.challenge.create_one(db=db, challenge=challenge)
