@@ -11,10 +11,16 @@ def get_one(db: Session, challenge_comment_id: int) -> models.ChallengeComment:
     )
 
 
-def get_multiple(
-    db: Session, skip: int = 0, limit: int = 100
+def get_multiple_for_challenge(
+    db: Session, challenge_id: int, skip: int = 0, limit: int = 100
 ) -> list[models.ChallengeComment]:
-    return db.query(models.ChallengeComment).offset(skip).limit(limit).all()
+    return (
+        db.query(models.ChallengeComment)
+        .filter(models.ChallengeComment.challenge_id == challenge_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_one(
