@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -18,6 +18,8 @@ class User(Base):
     submissions = relationship("Submission", back_populates="user")
     challenge_comments = relationship("ChallengeComment", back_populates="user")
     submission_comments = relationship("SubmissionComment", back_populates="user")
+    challenge_votes = relationship("ChallengeVote", back_populates="user")
+    submission_votes = relationship("SubmissionVote", back_populates="user")
 
 
 class Group(Base):
@@ -44,6 +46,7 @@ class Challenge(Base):
 
     submissions = relationship("Submission", back_populates="challenge")
     comments = relationship("ChallengeComment", back_populates="challenge")
+    votes = relationship("ChallengeVote", back_populates="challenge")
 
 
 class Submission(Base):
@@ -61,6 +64,7 @@ class Submission(Base):
     challenge = relationship("Challenge", back_populates="submissions")
 
     comments = relationship("SubmissionComment", back_populates="submission")
+    votes = relationship("SubmissionVote", back_populates="submission")
 
 
 class ChallengeComment(Base):
@@ -85,3 +89,27 @@ class SubmissionComment(Base):
     user = relationship("User", back_populates="submission_comments", lazy="joined")
     submission_id = Column(Integer, ForeignKey("submissions.id"))
     submission = relationship("Submission", back_populates="comments")
+
+
+class ChallengeVote(Base):
+    __tablename__ = "challenge_votes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    is_upvote = Column(Boolean)
+
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="challenge_votes", lazy="joined")
+    challenge_id = Column(Integer, ForeignKey("challenges.id"))
+    challenge = relationship("Challenge", back_populates="votes")
+
+
+class SubmissionVote(Base):
+    __tablename__ = "submission_votes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    is_upvote = Column(Boolean)
+
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="submission_votes", lazy="joined")
+    submission_id = Column(Integer, ForeignKey("submissions.id"))
+    submission = relationship("Submission", back_populates="votes")
