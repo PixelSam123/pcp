@@ -5,5 +5,6 @@ from . import (  # noqa: F401
     group,
     submission,
     submission_comment,
+    submission_vote,
     user,
 )
