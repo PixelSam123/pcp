@@ -32,6 +32,7 @@ def get_current_user(
     settings: Annotated[Settings, Depends(get_settings)],
     db: Session = Depends(get_db),
 ) -> models.User:
+    """Similar to Java EE's SecurityContext.getUserPrincipal()."""
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
