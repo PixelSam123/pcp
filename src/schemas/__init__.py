@@ -6,5 +6,6 @@ from . import (  # noqa: F401
     submission,
     submission_comment,
     submission_vote,
+    token,
     user,
 )

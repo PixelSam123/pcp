@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
 from ..dependencies import get_db
-from ..utils import openapi_http_exception
+from ..utils import get_password_hash, openapi_http_exception
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -19,6 +19,8 @@ def create_user(
     db_user = crud.user.get_one_by_name(db=db, name=user.name)
     if db_user:
         raise HTTPException(status_code=400, detail="User Already Exists")
+
+    user.password = get_password_hash(user.password)
 
     return crud.user.create_one(db=db, user=user)
 

@@ -9,6 +9,7 @@ from .routers import (
     submission_comments,
     submission_votes,
     submissions,
+    token,
     users,
 )
 
@@ -56,3 +57,4 @@ app.include_router(challenge_votes.router)
 app.include_router(submissions.router)
 app.include_router(submission_comments.router)
 app.include_router(submission_votes.router)
+app.include_router(token.router)

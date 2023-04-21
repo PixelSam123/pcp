@@ -1,8 +1,10 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
-from ..dependencies import get_db
+from ..dependencies import get_current_user, get_db
 from ..utils import openapi_http_exception
 
 router = APIRouter(prefix="/challenges", tags=["challenges"])
@@ -12,11 +14,16 @@ router = APIRouter(prefix="/challenges", tags=["challenges"])
     "/",
     response_model=schemas.challenge.ReadBrief,
     responses=openapi_http_exception(
-        [(400, "Challenge Already Exists or User Doesn't Exist")]
+        [
+            (400, "Challenge Already Exists or User Doesn't Exist"),
+            (401, "Not authenticated"),
+        ]
     ),
 )
 def create_challenge(
-    challenge: schemas.challenge.Create, db: Session = Depends(get_db)
+    challenge: schemas.challenge.Create,
+    current_user: Annotated[models.User, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ) -> models.Challenge:
     db_challenge = crud.challenge.get_one_by_name(db=db, name=challenge.name)
     if db_challenge:

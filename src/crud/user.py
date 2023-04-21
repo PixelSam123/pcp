@@ -1,4 +1,3 @@
-from argon2 import PasswordHasher
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
@@ -17,7 +16,7 @@ def get_multiple(db: Session, skip: int = 0, limit: int = 100) -> list[models.Us
 
 
 def create_one(db: Session, user: schemas.user.Create) -> models.User:
-    db_user = models.User(name=user.name, password=PasswordHasher().hash(user.password))
+    db_user = models.User(name=user.name, password=user.password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
