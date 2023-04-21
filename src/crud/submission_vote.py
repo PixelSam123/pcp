@@ -47,3 +47,10 @@ def create_one(
     db.refresh(db_submission_vote)
 
     return db_submission_vote
+
+
+def delete_one(db: Session, submission_vote_id: int) -> None:
+    db.query(models.SubmissionVote).filter(
+        models.SubmissionVote.id == submission_vote_id
+    ).delete()
+    db.commit()
