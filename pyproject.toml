@@ -21,6 +21,10 @@ select = [
     "PTH",
 ]
 
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
 [project]
 name = "pcp"
 version = "0.1.0"
