@@ -16,7 +16,10 @@ router = APIRouter(prefix="/submissions", tags=["submissions"])
     responses=openapi_http_exception(
         [
             (400, "Challenge Doesn't Exist or User Doesn't Exist"),
-            (401, "Not authenticated"),
+            (
+                401,
+                "Not authenticated or Not allowed to create on another user's behalf",
+            ),
         ]
     ),
 )
@@ -32,6 +35,11 @@ def create_submission_for_challenge(
     db_user = crud.user.get_one(db=db, user_id=submission.user_id)
     if db_user is None:
         raise HTTPException(status_code=400, detail="User Doesn't Exist")
+
+    if current_user.id != db_user.id:
+        raise HTTPException(
+            status_code=401, detail="Not allowed to create on another user's behalf"
+        )
 
     # ...insert checks against code checker here
 

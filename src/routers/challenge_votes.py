@@ -19,7 +19,10 @@ router = APIRouter(prefix="/challenge_votes", tags=["challenge_votes"])
                 400,
                 "Challenge Doesn't Exist or User Doesn't Exist or User Already Voted",
             ),
-            (401, "Not authenticated"),
+            (
+                401,
+                "Not authenticated or Not allowed to create on another user's behalf",
+            ),
         ]
     ),
 )
@@ -37,6 +40,11 @@ def create_challenge_vote(
     db_user = crud.user.get_one(db=db, user_id=challenge_vote.user_id)
     if db_user is None:
         raise HTTPException(status_code=400, detail="User Doesn't Exist")
+
+    if current_user.id != db_user.id:
+        raise HTTPException(
+            status_code=401, detail="Not allowed to create on another user's behalf"
+        )
 
     db_challenge_vote = crud.challenge_vote.get_one_for_user_and_challenge(
         db=db,

@@ -16,7 +16,10 @@ router = APIRouter(prefix="/submission_comments", tags=["submission_comments"])
     responses=openapi_http_exception(
         [
             (400, "Submission Doesn't Exist or User Doesn't Exist"),
-            (401, "Not authenticated"),
+            (
+                401,
+                "Not authenticated or Not allowed to create on another user's behalf",
+            ),
         ]
     ),
 )
@@ -34,6 +37,11 @@ def create_submission_comment(
     db_user = crud.user.get_one(db=db, user_id=submission_comment.user_id)
     if db_user is None:
         raise HTTPException(status_code=400, detail="User Doesn't Exist")
+
+    if current_user.id != db_user.id:
+        raise HTTPException(
+            status_code=401, detail="Not allowed to create on another user's behalf"
+        )
 
     return crud.submission_comment.create_one(
         db=db, submission_comment=submission_comment
