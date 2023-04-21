@@ -11,6 +11,17 @@ def get_one(db: Session, submission_vote_id: int) -> models.SubmissionVote:
     )
 
 
+def get_one_for_user_and_submission(
+    db: Session, user_id: int, submission_id: int
+) -> models.SubmissionVote:
+    return (
+        db.query(models.SubmissionVote)
+        .filter(models.SubmissionVote.user_id == user_id)
+        .filter(models.SubmissionVote.submission_id == submission_id)
+        .first()
+    )
+
+
 def get_multiple_for_submission(
     db: Session, submission_id: int, skip: int = 0, limit: int = 100
 ) -> list[models.SubmissionVote]:

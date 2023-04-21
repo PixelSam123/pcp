@@ -12,7 +12,7 @@ router = APIRouter(prefix="/challenge_votes", tags=["challenge_votes"])
     "/",
     response_model=schemas.challenge_vote.Read,
     responses=openapi_http_exception(
-        [(400, "Challenge Doesn't Exist or User Doesn't Exist")]
+        [(400, "Challenge Doesn't Exist or User Doesn't Exist or User Already Voted")]
     ),
 )
 def create_challenge_vote(
@@ -28,6 +28,16 @@ def create_challenge_vote(
     db_user = crud.user.get_one(db=db, user_id=challenge_vote.user_id)
     if db_user is None:
         raise HTTPException(status_code=400, detail="User Doesn't Exist")
+
+    db_challenge_vote = crud.challenge_vote.get_one_for_user_and_challenge(
+        db=db,
+        user_id=challenge_vote.user_id,
+        challenge_id=challenge_vote.challenge_id,
+    )
+    if db_challenge_vote:
+        raise HTTPException(
+            status_code=400, detail="User Already Voted on this Challenge"
+        )
 
     return crud.challenge_vote.create_one(db=db, challenge_vote=challenge_vote)
 

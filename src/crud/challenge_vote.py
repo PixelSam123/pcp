@@ -11,6 +11,17 @@ def get_one(db: Session, challenge_vote_id: int) -> models.ChallengeVote:
     )
 
 
+def get_one_for_user_and_challenge(
+    db: Session, user_id: int, challenge_id: int
+) -> models.ChallengeVote:
+    return (
+        db.query(models.ChallengeVote)
+        .filter(models.ChallengeVote.user_id == user_id)
+        .filter(models.ChallengeVote.challenge_id == challenge_id)
+        .first()
+    )
+
+
 def get_multiple_for_challenge(
     db: Session, challenge_id: int, skip: int = 0, limit: int = 100
 ) -> list[models.ChallengeVote]:

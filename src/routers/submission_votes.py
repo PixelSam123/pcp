@@ -12,7 +12,7 @@ router = APIRouter(prefix="/submission_votes", tags=["submission_votes"])
     "/",
     response_model=schemas.submission_vote.Read,
     responses=openapi_http_exception(
-        [(400, "Submission Doesn't Exist or User Doesn't Exist")]
+        [(400, "Submission Doesn't Exist or User Doesn't Exist or User Already Voted")]
     ),
 )
 def create_submission_vote(
@@ -28,6 +28,16 @@ def create_submission_vote(
     db_user = crud.user.get_one(db=db, user_id=submission_vote.user_id)
     if db_user is None:
         raise HTTPException(status_code=400, detail="User Doesn't Exist")
+
+    db_submission_vote = crud.submission_vote.get_one_for_user_and_submission(
+        db=db,
+        user_id=submission_vote.user_id,
+        submission_id=submission_vote.submission_id,
+    )
+    if db_submission_vote:
+        raise HTTPException(
+            status_code=400, detail="User Already Voted on this Submission"
+        )
 
     return crud.submission_vote.create_one(db=db, submission_vote=submission_vote)
 
