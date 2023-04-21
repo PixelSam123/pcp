@@ -12,6 +12,9 @@ from ..utils import create_access_token, verify_password
 router = APIRouter(prefix="/token")
 
 
+# Note: 401 response not documented yet as the
+# convenience function may need a revision to
+# support additional properties like "headers"
 @router.post("/", response_model=schemas.token.Token)
 def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
