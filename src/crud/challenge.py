@@ -26,6 +26,7 @@ def create_one(db: Session, challenge: schemas.challenge.Create) -> models.Chall
         user_id=challenge.user_id,
         description=challenge.description,
         initial_code=challenge.initial_code,
+        test_case=challenge.test_case,
     )
     db.add(db_challenge)
     db.commit()
