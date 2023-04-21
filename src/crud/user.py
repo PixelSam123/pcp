@@ -3,11 +3,11 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 
 
-def get_one(db: Session, user_id: int) -> models.User:
+def get_one(db: Session, user_id: int) -> models.User | None:
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 
-def get_one_by_name(db: Session, name: str) -> models.User:
+def get_one_by_name(db: Session, name: str) -> models.User | None:
     return db.query(models.User).filter(models.User.name == name).first()
 
 

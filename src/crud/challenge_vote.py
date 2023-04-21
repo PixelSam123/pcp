@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 
 
-def get_one(db: Session, challenge_vote_id: int) -> models.ChallengeVote:
+def get_one(db: Session, challenge_vote_id: int) -> models.ChallengeVote | None:
     return (
         db.query(models.ChallengeVote)
         .filter(models.ChallengeVote.id == challenge_vote_id)
@@ -13,7 +13,7 @@ def get_one(db: Session, challenge_vote_id: int) -> models.ChallengeVote:
 
 def get_one_for_user_and_challenge(
     db: Session, user_id: int, challenge_id: int
-) -> models.ChallengeVote:
+) -> models.ChallengeVote | None:
     return (
         db.query(models.ChallengeVote)
         .filter(models.ChallengeVote.user_id == user_id)

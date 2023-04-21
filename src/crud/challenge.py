@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 
 
-def get_one(db: Session, challenge_id: int) -> models.Challenge:
+def get_one(db: Session, challenge_id: int) -> models.Challenge | None:
     return (
         db.query(models.Challenge).filter(models.Challenge.id == challenge_id).first()
     )
 
 
-def get_one_by_name(db: Session, name: str) -> models.Challenge:
+def get_one_by_name(db: Session, name: str) -> models.Challenge | None:
     return db.query(models.Challenge).filter(models.Challenge.name == name).first()
 
 

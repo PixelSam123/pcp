@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 
 
-def get_one(db: Session, submission_id: int) -> models.Submission:
+def get_one(db: Session, submission_id: int) -> models.Submission | None:
     return (
         db.query(models.Submission)
         .filter(models.Submission.id == submission_id)

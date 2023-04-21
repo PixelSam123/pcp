@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 
 
-def get_one(db: Session, challenge_comment_id: int) -> models.ChallengeComment:
+def get_one(db: Session, challenge_comment_id: int) -> models.ChallengeComment | None:
     return (
         db.query(models.ChallengeComment)
         .filter(models.ChallengeComment.id == challenge_comment_id)
