@@ -60,7 +60,7 @@ def create_challenge_vote(
 
 
 @router.get(
-    "/{challenge_name}",
+    "/",
     response_model=list[schemas.challenge_vote.Read],
     responses=openapi_http_exception([(404, "Challenge Not Found")]),
 )

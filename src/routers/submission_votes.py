@@ -60,7 +60,7 @@ def create_submission_vote(
 
 
 @router.get(
-    "/{submission_id}",
+    "/",
     response_model=list[schemas.submission_vote.Read],
     responses=openapi_http_exception(
         [(404, "Submission Not Found"), (401, "Not authenticated")]

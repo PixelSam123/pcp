@@ -47,7 +47,7 @@ def create_submission_for_challenge(
 
 
 @router.get(
-    "/{challenge_name}",
+    "/",
     response_model=list[schemas.submission.Read],
     responses=openapi_http_exception(
         [(404, "Challenge Not Found"), (401, "Not authenticated")]
