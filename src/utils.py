@@ -2,13 +2,17 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from jose import jwt
 
 password_hasher = PasswordHasher()
 
 
 def verify_password(hashed_password: str, plain_password: str) -> bool:
-    return password_hasher.verify(hashed_password, plain_password)
+    try:
+        return password_hasher.verify(hashed_password, plain_password)
+    except VerifyMismatchError:
+        return False
 
 
 def get_password_hash(password: str) -> str:
