@@ -12,7 +12,7 @@ router = APIRouter(prefix="/challenges", tags=["challenges"])
 
 @router.post(
     "/",
-    response_model=schemas.challenge.ReadBrief,
+    response_model=schemas.challenge.Read,
     responses=openapi_http_exception(
         [
             (400, "Challenge Already Exists or User Doesn't Exist"),
