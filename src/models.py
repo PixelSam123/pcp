@@ -10,6 +10,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     password = Column(String)
+    points = Column(Integer, default=0)
 
     group_id = Column(Integer, ForeignKey("groups.id"))
     group = relationship("Group", back_populates="users", lazy="joined")

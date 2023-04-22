@@ -13,6 +13,7 @@ class Create(Base):
 
 class ReadBrief(Base):
     id: int
+    points: int
     group: group.ReadBrief | None
 
     class Config:
