@@ -40,14 +40,14 @@ def get_current_user(
     )
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
-        user_id: int | None = payload.get("sub")
+        stringified_user_id: str | None = payload.get("sub")
 
-        if user_id is None:
+        if stringified_user_id is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
 
-    db_user = crud.user.get_one(db=db, user_id=user_id)
+    db_user = crud.user.get_one(db=db, user_id=int(stringified_user_id))
     if db_user is None:
         raise credentials_exception
 

@@ -32,7 +32,8 @@ def login_for_access_token(
         )
 
     access_token = create_access_token(
-        secret_key=settings.secret_key, data={"sub": db_user.id, "name": db_user.name}
+        secret_key=settings.secret_key,
+        data={"sub": str(db_user.id), "name": db_user.name},
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
