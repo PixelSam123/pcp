@@ -47,9 +47,9 @@ def create_submission_for_challenge(
         db=db, user_id=submission.user_id, challenge_id=submission.challenge_id
     )
     if len(db_submissions) < 1:
-        crud.user.add_points(
+        crud.user.add_points_to_one(
             db=db,
-            db_user=db_user,
+            user_id=submission.user_id,
             points=db_challenge.tier,  # type: ignore
         )
 
