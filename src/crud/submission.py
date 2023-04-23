@@ -23,6 +23,19 @@ def get_multiple_for_challenge(
     )
 
 
+def get_multiple_for_user_and_challenge(
+    db: Session, user_id: int, challenge_id: int, skip: int = 0, limit: int = 100
+) -> list[models.Submission]:
+    return (
+        db.query(models.Submission)
+        .filter(models.Submission.user_id == user_id)
+        .filter(models.Submission.challenge_id == challenge_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
 def create_one(db: Session, submission: schemas.submission.Create) -> models.Submission:
     db_submission = models.Submission(
         code=submission.code,

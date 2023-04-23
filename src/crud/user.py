@@ -22,3 +22,9 @@ def create_one(db: Session, user: schemas.user.Create) -> models.User:
     db.refresh(db_user)
 
     return db_user
+
+
+def add_points(db: Session, db_user: models.User, points: int) -> None:
+    db_user.points += points  # type: ignore
+    db.commit()
+    db.expire(db_user)

@@ -43,6 +43,16 @@ def create_submission_for_challenge(
 
     # ...insert checks against code checker here
 
+    db_submissions = crud.submission.get_multiple_for_user_and_challenge(
+        db=db, user_id=submission.user_id, challenge_id=submission.challenge_id
+    )
+    if len(db_submissions) < 1:
+        crud.user.add_points(
+            db=db,
+            db_user=db_user,
+            points=db_challenge.tier,  # type: ignore
+        )
+
     return crud.submission.create_one(db=db, submission=submission)
 
 
@@ -65,5 +75,5 @@ def get_submissions_for_challenge_by_name(
         raise HTTPException(status_code=404, detail="Challenge Not Found")
 
     return crud.submission.get_multiple_for_challenge(
-        db=db, challenge_id=int(str(db_challenge.id)), skip=skip, limit=limit
+        db=db, challenge_id=db_challenge.id, skip=skip, limit=limit  # type: ignore
     )
