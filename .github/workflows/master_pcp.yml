@@ -22,14 +22,15 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Create and start virtual environment
+      - name: Install PDM (Python Dependency Manager)
         run: |
-          python -m venv venv
-          source venv/bin/activate
+          curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -
+
+      - name: Create virtual environment, install dependencies and start it
+        run: |
+          pdm sync
+          pdm venv activate
       
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-        
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
       
       - name: Upload artifact for deployment jobs
@@ -38,7 +39,7 @@ jobs:
           name: python-app
           path: |
             . 
-            !venv/
+            !.venv/
 
   deploy:
     runs-on: ubuntu-latest
