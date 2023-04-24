@@ -12,7 +12,13 @@ def get_one_by_name(db: Session, name: str) -> models.User | None:
 
 
 def get_multiple(db: Session, skip: int = 0, limit: int = 100) -> list[models.User]:
-    return db.query(models.User).offset(skip).limit(limit).all()
+    return (
+        db.query(models.User)
+        .order_by(models.User.points.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_one(db: Session, user: schemas.user.Create) -> models.User:
