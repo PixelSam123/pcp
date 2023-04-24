@@ -55,9 +55,6 @@ class Submission(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     code = Column(String)
-    result = Column(String)
-    time = Column(Integer)
-    memory = Column(Integer)
 
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="submissions", lazy="joined")

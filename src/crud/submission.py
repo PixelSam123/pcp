@@ -39,9 +39,6 @@ def get_multiple_for_user_and_challenge(
 def create_one(db: Session, submission: schemas.submission.Create) -> models.Submission:
     db_submission = models.Submission(
         code=submission.code,
-        result=submission.result,
-        time=submission.time,
-        memory=submission.memory,
         user_id=submission.user_id,
         challenge_id=submission.challenge_id,
     )

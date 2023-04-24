@@ -5,9 +5,6 @@ from . import user
 
 class Base(BaseModel):
     code: str
-    result: str
-    time: int
-    memory: int
 
 
 class Create(Base):
