@@ -49,9 +49,6 @@ app = FastAPI(
             "description": "Submission vote creation, viewing and editing",
         },
     ],
-    servers=[
-        {"url": "https://pcp.azurewebsites.net", "description": "Azure deployment"},
-    ],
 )
 
 origins = [
