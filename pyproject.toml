@@ -25,6 +25,12 @@ select = [
 venvPath = "."
 venv = ".venv"
 
+[tool.poetry]
+name = "pcp"
+version = "0.1.0"
+description = "Self-hostable coding courses/problems platform"
+authors = ["PixelSam123 <77851256+PixelSam123@users.noreply.github.com>"]
+
 [project]
 name = "pcp"
 version = "0.1.0"
