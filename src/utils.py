@@ -27,7 +27,7 @@ def create_access_token(
     if expires_delta:
         expire = datetime.now(tz=UTC) + expires_delta
     else:
-        expire = datetime.now(tz=UTC) + timedelta(minutes=30)
+        expire = datetime.now(tz=UTC) + timedelta(minutes=60)
 
     to_encode.update({"exp": expire})
 
