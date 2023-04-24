@@ -17,6 +17,31 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # Optional: Add step to set up Python and run tests here (PyTest, Django test suites, etc.)
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-app
+          path: |
+            . 
+            !.venv/
+            !build/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: 'https://pcp.azurewebsites.net/docs'
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: python-app
+          path: .
+          
       - name: Set up Python version
         uses: actions/setup-python@v1
         with:
@@ -30,35 +55,3 @@ jobs:
         run: |
           pdm sync
           pdm venv activate
-      
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-      
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v2
-        with:
-          name: python-app
-          path: |
-            . 
-            !.venv/
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v2
-        with:
-          name: python-app
-          path: .
-          
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v2
-        id: deploy-to-webapp
-        with:
-          app-name: 'pcp'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6B27FF60103942779DD8A8F58254C0CB }}
