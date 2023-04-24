@@ -39,7 +39,10 @@ authors = [
     { name = "PixelSam123", email = "77851256+PixelSam123@users.noreply.github.com" },
 ]
 dependencies = [
-    "fastapi[all]>=0.95.0",
+    "fastapi>=0.95.0",
+    "httpx>=0.24.0",
+    "python-multipart>=0.0.6",
+    "uvicorn[standard]>=0.21.0",
     "sqlalchemy>=2.0.7",
     "argon2-cffi>=21.3.0",
     "python-jose[cryptography]>=3.3.0",
