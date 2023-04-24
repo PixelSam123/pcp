@@ -17,7 +17,23 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Optional: Add step to set up Python and run tests here (PyTest, Django test suites, etc.)
+      - name: Setup PDM (Python Dependency Manager)
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: 3.11
+          architecture: x64
+          version: 2.5.0
+
+      - name: Create virtual environment, install dependencies and start it
+        run: |
+          pdm sync
+          pdm venv activate
+
+      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+
+      - name: Generate requirements.txt
+        run: |
+          pdm export -o requirements.txt
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v2
@@ -33,7 +49,7 @@ jobs:
     needs: build
     environment:
       name: 'Production'
-      url: 'https://pcp.azurewebsites.net/docs'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
@@ -41,17 +57,11 @@ jobs:
         with:
           name: python-app
           path: .
-          
-      - name: Set up Python version
-        uses: actions/setup-python@v1
+
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v2
+        id: deploy-to-webapp
         with:
-          python-version: '3.11'
-
-      - name: Install PDM (Python Dependency Manager)
-        run: |
-          curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -
-
-      - name: Create virtual environment, install dependencies and start it
-        run: |
-          pdm sync
-          pdm venv activate
+          app-name: 'pcp'
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6B27FF60103942779DD8A8F58254C0CB }}
