@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .database import engine
@@ -48,6 +49,18 @@ app = FastAPI(
             "description": "Submission vote creation, viewing and editing",
         },
     ],
+)
+
+origins = [
+    "https://pixelsam123.github.io",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 app.include_router(users.router)
