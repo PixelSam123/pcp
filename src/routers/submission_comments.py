@@ -11,7 +11,7 @@ router = APIRouter(prefix="/submission_comments", tags=["submission_comments"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=schemas.submission_comment.Read,
     responses=openapi_http_exception(
         [
@@ -49,7 +49,7 @@ def create_submission_comment(
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[schemas.submission_comment.Read],
     responses=openapi_http_exception(
         [(404, "Submission Not Found"), (401, "Not authenticated")]

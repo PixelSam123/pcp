@@ -11,7 +11,7 @@ router = APIRouter(prefix="/submission_votes", tags=["submission_votes"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=schemas.submission_vote.Read,
     responses=openapi_http_exception(
         [
@@ -60,7 +60,7 @@ def create_submission_vote(
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[schemas.submission_vote.Read],
     responses=openapi_http_exception(
         [(404, "Submission Not Found"), (401, "Not authenticated")]

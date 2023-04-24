@@ -11,7 +11,7 @@ router = APIRouter(prefix="/challenge_votes", tags=["challenge_votes"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=schemas.challenge_vote.Read,
     responses=openapi_http_exception(
         [
@@ -60,7 +60,7 @@ def create_challenge_vote(
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[schemas.challenge_vote.Read],
     responses=openapi_http_exception([(404, "Challenge Not Found")]),
 )

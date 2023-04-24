@@ -11,7 +11,7 @@ router = APIRouter(prefix="/submissions", tags=["submissions"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=schemas.submission.Read,
     responses=openapi_http_exception(
         [
@@ -57,7 +57,7 @@ def create_submission_for_challenge(
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[schemas.submission.Read],
     responses=openapi_http_exception(
         [(404, "Challenge Not Found"), (401, "Not authenticated")]

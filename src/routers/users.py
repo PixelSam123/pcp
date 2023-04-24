@@ -9,7 +9,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=schemas.user.ReadBrief,
     responses=openapi_http_exception([(400, "User Already Exists")]),
 )
@@ -25,7 +25,7 @@ def create_user(
     return crud.user.create_one(db=db, user=user)
 
 
-@router.get("/", response_model=list[schemas.user.ReadBrief])
+@router.get("", response_model=list[schemas.user.ReadBrief])
 def get_users(
     skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> list[models.User]:

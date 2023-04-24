@@ -11,7 +11,7 @@ router = APIRouter(prefix="/challenge_comments", tags=["challenge_comments"])
 
 
 @router.post(
-    "/",
+    "",
     response_model=schemas.challenge_comment.Read,
     responses=openapi_http_exception(
         [
@@ -47,7 +47,7 @@ def create_challenge_comment(
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[schemas.challenge_comment.Read],
     responses=openapi_http_exception([(404, "Challenge Not Found")]),
 )
