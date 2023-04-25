@@ -44,7 +44,7 @@ def create_submission_for_challenge(
             status_code=401, detail="Not allowed to create on another user's behalf"
         )
 
-    code_to_exec = f"{db_challenge.test_case}\n{submission.code}"
+    code_to_exec = f"{submission.code}\n{db_challenge.test_case}"
     code_exec_request = httpx.post(
         settings.code_exec_server_url,
         json={"lang": "js", "code": code_to_exec},
