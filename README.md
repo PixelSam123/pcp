@@ -26,6 +26,7 @@ pdm export -o requirements.txt
 You need to run the app with these environment variables, either from the command line or a `.env` file.
 
 - `SECRET_KEY`: a secret generated with `openssl rand -hex 32`
+- `CODE_EXEC_SERVER_URL`: an instance of either [coxecude](https://github.com/PixelSam123/coxecude) or [containexec](https://github.com/PixelSam123/containexec). You can also create your own code execution server that exposes an API similar to `coxecude`.
 
 Start the app with this command:
 
