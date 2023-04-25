@@ -2,6 +2,7 @@
 
 [tool.pdm.scripts]
 dev = "uvicorn src.main:app --reload"
+start = "uvicorn src.main:app --host 0.0.0.0 --forwarded-allow-ips='*'"
 
 [tool.ruff]
 select = [
