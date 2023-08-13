@@ -1,9 +1,14 @@
 package io.github.pixelsam123.pcp.user;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import io.github.pixelsam123.pcp.challenge.Challenge;
+import io.github.pixelsam123.pcp.challenge.comment.ChallengeComment;
+import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmission;
+import io.github.pixelsam123.pcp.challenge.submission.comment.ChallengeSubmissionComment;
+import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVote;
+import io.github.pixelsam123.pcp.challenge.vote.ChallengeVote;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class User {
@@ -38,6 +43,7 @@ public class User {
         this.name = name;
     }
 
+    @Column(nullable = false)
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -53,5 +59,35 @@ public class User {
 
     public void setPoints(int points) {
         this.points = points;
+    }
+
+    @OneToMany(mappedBy = "user")
+    public List<Challenge> getChallenges() {
+        return challenges;
+    }
+
+    @OneToMany(mappedBy = "user")
+    public List<ChallengeSubmission> getChallengeSubmissions() {
+        return challengeSubmissions;
+    }
+
+    @OneToMany(mappedBy = "user")
+    public List<ChallengeComment> getChallengeComments() {
+        return challengeComments;
+    }
+
+    @OneToMany(mappedBy = "user")
+    public List<ChallengeSubmissionComment> getChallengeSubmissionComments() {
+        return challengeSubmissionComments;
+    }
+
+    @OneToMany(mappedBy = "user")
+    public List<ChallengeVote> getChallengeVotes() {
+        return challengeVotes;
+    }
+
+    @OneToMany(mappedBy = "user")
+    public List<ChallengeSubmissionVote> getChallengeSubmissionVotes() {
+        return challengeSubmissionVotes;
     }
 }
