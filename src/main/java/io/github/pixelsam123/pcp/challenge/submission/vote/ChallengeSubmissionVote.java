@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 @Entity
 public class ChallengeSubmissionVote {
-    private long id;
+    private Long id;
     private boolean upvote;
 
     private User user;
@@ -14,7 +14,7 @@ public class ChallengeSubmissionVote {
 
     @Id
     @GeneratedValue
-    public long getId() {
+    public Long getId() {
         return id;
     }
 

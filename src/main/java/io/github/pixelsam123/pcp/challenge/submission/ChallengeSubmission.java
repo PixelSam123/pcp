@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 public class ChallengeSubmission {
-    private long id;
+    private Long id;
     private String code;
 
     private User user;
@@ -21,7 +21,7 @@ public class ChallengeSubmission {
 
     @Id
     @GeneratedValue
-    public long getId() {
+    public Long getId() {
         return id;
     }
 

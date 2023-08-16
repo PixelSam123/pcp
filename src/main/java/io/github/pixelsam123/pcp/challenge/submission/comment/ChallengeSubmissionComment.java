@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 @Entity
 public class ChallengeSubmissionComment {
-    private long id;
+    private Long id;
     private String content;
 
     private User user;
@@ -14,7 +14,7 @@ public class ChallengeSubmissionComment {
 
     @Id
     @GeneratedValue
-    public long getId() {
+    public Long getId() {
         return id;
     }
 

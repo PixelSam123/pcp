@@ -12,7 +12,7 @@ import java.util.List;
 
 @Entity
 public class User {
-    private long id;
+    private Long id;
     private String name;
     private String passwordHash;
     private int points;
@@ -26,7 +26,7 @@ public class User {
 
     @Id
     @GeneratedValue
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
