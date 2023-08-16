@@ -18,17 +18,9 @@ public class ChallengeSubmissionComment {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     @Column(nullable = false)
     public String getContent() {
         return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     @ManyToOne
@@ -36,13 +28,21 @@ public class ChallengeSubmissionComment {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     @ManyToOne
     public ChallengeSubmission getChallengeSubmission() {
         return challengeSubmission;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public void setChallengeSubmission(ChallengeSubmission challengeSubmission) {

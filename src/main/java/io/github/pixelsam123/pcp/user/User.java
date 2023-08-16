@@ -30,17 +30,9 @@ public class User {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     @Column(unique = true)
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Column(nullable = false)
@@ -48,17 +40,9 @@ public class User {
         return passwordHash;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
     @Column(columnDefinition = "int default 0")
     public int getPoints() {
         return points;
-    }
-
-    public void setPoints(int points) {
-        this.points = points;
     }
 
     @OneToMany(mappedBy = "user")
@@ -89,5 +73,45 @@ public class User {
     @OneToMany(mappedBy = "user")
     public List<ChallengeSubmissionVote> getChallengeSubmissionVotes() {
         return challengeSubmissionVotes;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    public void setChallenges(List<Challenge> challenges) {
+        this.challenges = challenges;
+    }
+
+    public void setChallengeSubmissions(List<ChallengeSubmission> challengeSubmissions) {
+        this.challengeSubmissions = challengeSubmissions;
+    }
+
+    public void setChallengeComments(List<ChallengeComment> challengeComments) {
+        this.challengeComments = challengeComments;
+    }
+
+    public void setChallengeSubmissionComments(List<ChallengeSubmissionComment> challengeSubmissionComments) {
+        this.challengeSubmissionComments = challengeSubmissionComments;
+    }
+
+    public void setChallengeVotes(List<ChallengeVote> challengeVotes) {
+        this.challengeVotes = challengeVotes;
+    }
+
+    public void setChallengeSubmissionVotes(List<ChallengeSubmissionVote> challengeSubmissionVotes) {
+        this.challengeSubmissionVotes = challengeSubmissionVotes;
     }
 }

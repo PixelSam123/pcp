@@ -29,17 +29,9 @@ public class Challenge {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     @Column(unique = true)
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Column(nullable = false)
@@ -47,17 +39,9 @@ public class Challenge {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     @Column(nullable = false)
     public String getInitialCode() {
         return initialCode;
-    }
-
-    public void setInitialCode(String initialCode) {
-        this.initialCode = initialCode;
     }
 
     @Column(nullable = false)
@@ -65,26 +49,14 @@ public class Challenge {
         return testCase;
     }
 
-    public void setTestCase(String testCase) {
-        this.testCase = testCase;
-    }
-
     @Column(nullable = false)
     public int getTier() {
         return tier;
     }
 
-    public void setTier(int tier) {
-        this.tier = tier;
-    }
-
     @ManyToOne
     public User getUser() {
         return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     @OneToMany(mappedBy = "challenge")
@@ -100,5 +72,45 @@ public class Challenge {
     @OneToMany(mappedBy = "challenge")
     public List<ChallengeVote> getChallengeVotes() {
         return challengeVotes;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setInitialCode(String initialCode) {
+        this.initialCode = initialCode;
+    }
+
+    public void setTestCase(String testCase) {
+        this.testCase = testCase;
+    }
+
+    public void setTier(int tier) {
+        this.tier = tier;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setChallengeSubmissions(List<ChallengeSubmission> challengeSubmissions) {
+        this.challengeSubmissions = challengeSubmissions;
+    }
+
+    public void setChallengeComments(List<ChallengeComment> challengeComments) {
+        this.challengeComments = challengeComments;
+    }
+
+    public void setChallengeVotes(List<ChallengeVote> challengeVotes) {
+        this.challengeVotes = challengeVotes;
     }
 }

@@ -25,17 +25,9 @@ public class ChallengeSubmission {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     @Column(nullable = false)
     public String getCode() {
         return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     @ManyToOne
@@ -43,17 +35,9 @@ public class ChallengeSubmission {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     @ManyToOne
     public Challenge getChallenge() {
         return challenge;
-    }
-
-    public void setChallenge(Challenge challenge) {
-        this.challenge = challenge;
     }
 
     @OneToMany(mappedBy = "challengeSubmission")
@@ -64,5 +48,29 @@ public class ChallengeSubmission {
     @OneToMany(mappedBy = "challengeSubmission")
     public List<ChallengeSubmissionVote> getChallengeSubmissionVotes() {
         return challengeSubmissionVotes;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setChallenge(Challenge challenge) {
+        this.challenge = challenge;
+    }
+
+    public void setChallengeSubmissionComments(List<ChallengeSubmissionComment> challengeSubmissionComments) {
+        this.challengeSubmissionComments = challengeSubmissionComments;
+    }
+
+    public void setChallengeSubmissionVotes(List<ChallengeSubmissionVote> challengeSubmissionVotes) {
+        this.challengeSubmissionVotes = challengeSubmissionVotes;
     }
 }

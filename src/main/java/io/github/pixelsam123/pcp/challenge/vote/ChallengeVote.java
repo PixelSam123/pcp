@@ -18,17 +18,9 @@ public class ChallengeVote {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     @Column(nullable = false)
     public boolean isUpvote() {
         return upvote;
-    }
-
-    public void setUpvote(boolean upvote) {
-        this.upvote = upvote;
     }
 
     @ManyToOne
@@ -36,13 +28,21 @@ public class ChallengeVote {
         return user;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     @ManyToOne
     public Challenge getChallenge() {
         return challenge;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setUpvote(boolean upvote) {
+        this.upvote = upvote;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public void setChallenge(Challenge challenge) {
