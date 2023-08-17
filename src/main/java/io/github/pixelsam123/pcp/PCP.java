@@ -1,8 +1,10 @@
 package io.github.pixelsam123.pcp;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
 @OpenAPIDefinition(
     info = @Info(
@@ -35,4 +37,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
     }
 )
 public class PCP {
+    @ApplicationScoped
+    public Argon2PasswordEncoder argon2PasswordEncoder() {
+        return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
+    }
 }
