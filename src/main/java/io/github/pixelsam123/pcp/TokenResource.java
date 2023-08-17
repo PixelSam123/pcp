@@ -3,6 +3,9 @@ package io.github.pixelsam123.pcp;
 import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.jwt.build.Jwt;
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
+import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -26,22 +29,29 @@ public class TokenResource {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> loginForToken(String username, String password) {
-        User dbUser = userRepository.find("name", username).singleResult();
+    public Uni<Map<String, String>> loginForToken(String username, String password) {
+        return Uni
+            .createFrom()
+            .<User>item(() -> userRepository.find("name", username).firstResult())
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+            .map(Unchecked.function(dbUser -> {
+                if (dbUser == null || !verifyPassword(password, dbUser.getPasswordHash())) {
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .header("WWW-Authenticate", "Bearer")
+                            .entity("Incorrect username or password")
+                            .build()
+                    );
+                }
 
-        if (dbUser == null || !verifyPassword(password, dbUser.getPasswordHash())) {
-            throw new BadRequestException(
-                Response
-                    .status(Response.Status.BAD_REQUEST)
-                    .header("WWW-Authenticate", "Bearer")
-                    .entity("Incorrect username or password")
-                    .build()
-            );
-        }
+                String token = createToken(dbUser.getId().toString(), dbUser.getName());
 
-        String token = createToken(dbUser.getId().toString(), dbUser.getName());
-
-        return Map.ofEntries(Map.entry("access_token", token), Map.entry("token_type", "bearer"));
+                return Map.ofEntries(
+                    Map.entry("access_token", token),
+                    Map.entry("token_type", "bearer")
+                );
+            }));
     }
 
     private boolean verifyPassword(String password, String hash) {
