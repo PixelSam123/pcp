@@ -37,3 +37,7 @@ nb-configuration.xml
 
 # Plugin directory
 /.quarkus/cli/plugins/
+
+# JWT keys
+src/main/resources/publicKey.pem
+src/main/resources/rsaPrivateKey.pem
