@@ -24,6 +24,16 @@ public class User {
     private List<ChallengeVote> challengeVotes;
     private List<ChallengeSubmissionVote> challengeSubmissionVotes;
 
+    public User() {
+        this.points = 0;
+    }
+
+    public User(UserCreateDto userToCreate) {
+        this.name = userToCreate.name();
+        this.passwordHash = userToCreate.password();
+        this.points = 0;
+    }
+
     @Id
     @GeneratedValue
     public Long getId() {
