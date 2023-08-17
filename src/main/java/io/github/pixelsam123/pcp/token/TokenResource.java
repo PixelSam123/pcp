@@ -1,4 +1,4 @@
-package io.github.pixelsam123.pcp;
+package io.github.pixelsam123.pcp.token;
 
 import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
@@ -29,7 +29,7 @@ public class TokenResource {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Map<String, String>> loginForToken(String username, String password) {
+    public Uni<Token> loginForToken(String username, String password) {
         return Uni
             .createFrom()
             .<User>item(() -> userRepository.find("name", username).firstResult())
@@ -47,10 +47,7 @@ public class TokenResource {
 
                 String token = createToken(dbUser.getId().toString(), dbUser.getName());
 
-                return Map.ofEntries(
-                    Map.entry("access_token", token),
-                    Map.entry("token_type", "bearer")
-                );
+                return new Token(token, "Bearer");
             }));
     }
 
