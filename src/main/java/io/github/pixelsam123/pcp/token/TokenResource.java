@@ -9,9 +9,8 @@ import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.reactive.RestForm;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
-
-import java.util.Map;
 
 @Path("/token")
 public class TokenResource {
@@ -29,7 +28,7 @@ public class TokenResource {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Token> loginForToken(String username, String password) {
+    public Uni<Token> loginForToken(@RestForm String username, @RestForm String password) {
         return Uni
             .createFrom()
             .<User>item(() -> userRepository.find("name", username).firstResult())
