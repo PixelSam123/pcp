@@ -7,21 +7,36 @@ import io.github.pixelsam123.pcp.challenge.submission.comment.ChallengeSubmissio
 import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVote;
 import io.github.pixelsam123.pcp.challenge.vote.ChallengeVote;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
 public class User {
+    @Id
+    @GeneratedValue
     private Long id;
+    @Column(unique = true)
     private String name;
+    @Column(nullable = false)
     private String passwordHash;
+    @Column(columnDefinition = "int default 0")
     private int points;
 
+    @OneToMany(mappedBy = "user")
     private List<Challenge> challenges;
+    @OneToMany(mappedBy = "user")
     private List<ChallengeSubmission> challengeSubmissions;
+    @OneToMany(mappedBy = "user")
     private List<ChallengeComment> challengeComments;
+    @OneToMany(mappedBy = "user")
     private List<ChallengeSubmissionComment> challengeSubmissionComments;
+    @OneToMany(mappedBy = "user")
     private List<ChallengeVote> challengeVotes;
+    @OneToMany(mappedBy = "user")
     private List<ChallengeSubmissionVote> challengeSubmissionVotes;
 
     public User() {
@@ -31,96 +46,5 @@ public class User {
         this.name = userToCreate.name();
         this.passwordHash = userToCreate.password();
         this.points = 0;
-    }
-
-    @Id
-    @GeneratedValue
-    public Long getId() {
-        return id;
-    }
-
-    @Column(unique = true)
-    public String getName() {
-        return name;
-    }
-
-    @Column(nullable = false)
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    @Column(columnDefinition = "int default 0")
-    public int getPoints() {
-        return points;
-    }
-
-    @OneToMany(mappedBy = "user")
-    public List<Challenge> getChallenges() {
-        return challenges;
-    }
-
-    @OneToMany(mappedBy = "user")
-    public List<ChallengeSubmission> getChallengeSubmissions() {
-        return challengeSubmissions;
-    }
-
-    @OneToMany(mappedBy = "user")
-    public List<ChallengeComment> getChallengeComments() {
-        return challengeComments;
-    }
-
-    @OneToMany(mappedBy = "user")
-    public List<ChallengeSubmissionComment> getChallengeSubmissionComments() {
-        return challengeSubmissionComments;
-    }
-
-    @OneToMany(mappedBy = "user")
-    public List<ChallengeVote> getChallengeVotes() {
-        return challengeVotes;
-    }
-
-    @OneToMany(mappedBy = "user")
-    public List<ChallengeSubmissionVote> getChallengeSubmissionVotes() {
-        return challengeSubmissionVotes;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public void setPoints(int points) {
-        this.points = points;
-    }
-
-    public void setChallenges(List<Challenge> challenges) {
-        this.challenges = challenges;
-    }
-
-    public void setChallengeSubmissions(List<ChallengeSubmission> challengeSubmissions) {
-        this.challengeSubmissions = challengeSubmissions;
-    }
-
-    public void setChallengeComments(List<ChallengeComment> challengeComments) {
-        this.challengeComments = challengeComments;
-    }
-
-    public void setChallengeSubmissionComments(List<ChallengeSubmissionComment> challengeSubmissionComments) {
-        this.challengeSubmissionComments = challengeSubmissionComments;
-    }
-
-    public void setChallengeVotes(List<ChallengeVote> challengeVotes) {
-        this.challengeVotes = challengeVotes;
-    }
-
-    public void setChallengeSubmissionVotes(List<ChallengeSubmissionVote> challengeSubmissionVotes) {
-        this.challengeSubmissionVotes = challengeSubmissionVotes;
     }
 }

@@ -3,49 +3,21 @@ package io.github.pixelsam123.pcp.challenge.submission.comment;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmission;
 import io.github.pixelsam123.pcp.user.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 public class ChallengeSubmissionComment {
-    private Long id;
-    private String content;
-
-    private User user;
-    private ChallengeSubmission challengeSubmission;
-
     @Id
     @GeneratedValue
-    public Long getId() {
-        return id;
-    }
-
+    private Long id;
     @Column(nullable = false)
-    public String getContent() {
-        return content;
-    }
+    private String content;
 
     @ManyToOne
-    public User getUser() {
-        return user;
-    }
-
+    private User user;
     @ManyToOne
-    public ChallengeSubmission getChallengeSubmission() {
-        return challengeSubmission;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setChallengeSubmission(ChallengeSubmission challengeSubmission) {
-        this.challengeSubmission = challengeSubmission;
-    }
+    private ChallengeSubmission challengeSubmission;
 }

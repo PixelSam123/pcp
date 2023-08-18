@@ -3,13 +3,22 @@ package io.github.pixelsam123.pcp.challenge.comment;
 import io.github.pixelsam123.pcp.challenge.Challenge;
 import io.github.pixelsam123.pcp.user.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 public class ChallengeComment {
+    @Id
+    @GeneratedValue
     private Long id;
+    @Column(nullable = false)
     private String content;
 
+    @ManyToOne
     private User user;
+    @ManyToOne
     private Challenge challenge;
 
     public ChallengeComment() {
@@ -22,43 +31,6 @@ public class ChallengeComment {
     ) {
         this.content = challengeCommentToCreate.content();
         this.user = user;
-        this.challenge = challenge;
-    }
-
-    @Id
-    @GeneratedValue
-    public Long getId() {
-        return id;
-    }
-
-    @Column(nullable = false)
-    public String getContent() {
-        return content;
-    }
-
-    @ManyToOne
-    public User getUser() {
-        return user;
-    }
-
-    @ManyToOne
-    public Challenge getChallenge() {
-        return challenge;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setChallenge(Challenge challenge) {
         this.challenge = challenge;
     }
 }

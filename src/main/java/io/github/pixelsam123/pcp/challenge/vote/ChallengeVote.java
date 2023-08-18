@@ -3,13 +3,22 @@ package io.github.pixelsam123.pcp.challenge.vote;
 import io.github.pixelsam123.pcp.challenge.Challenge;
 import io.github.pixelsam123.pcp.user.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 public class ChallengeVote {
+    @Id
+    @GeneratedValue
     private Long id;
+    @Column(nullable = false)
     private boolean isUpvote;
 
+    @ManyToOne
     private User user;
+    @ManyToOne
     private Challenge challenge;
 
     public ChallengeVote() {
@@ -22,43 +31,6 @@ public class ChallengeVote {
     ) {
         this.isUpvote = challengeVoteToCreate.isUpvote();
         this.user = user;
-        this.challenge = challenge;
-    }
-
-    @Id
-    @GeneratedValue
-    public Long getId() {
-        return id;
-    }
-
-    @Column(nullable = false)
-    public boolean getIsUpvote() {
-        return isUpvote;
-    }
-
-    @ManyToOne
-    public User getUser() {
-        return user;
-    }
-
-    @ManyToOne
-    public Challenge getChallenge() {
-        return challenge;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setIsUpvote(boolean isUpvote) {
-        this.isUpvote = isUpvote;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setChallenge(Challenge challenge) {
         this.challenge = challenge;
     }
 }

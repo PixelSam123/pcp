@@ -10,7 +10,7 @@ public record ChallengeVoteDto(
     public ChallengeVoteDto(ChallengeVote challengeVote) {
         this(
             challengeVote.getId(),
-            challengeVote.getIsUpvote(),
+            challengeVote.isUpvote(),
             new UserBriefDto(challengeVote.getUser())
         );
     }
