@@ -25,7 +25,6 @@ public class User {
     private List<ChallengeSubmissionVote> challengeSubmissionVotes;
 
     public User() {
-        this.points = 0;
     }
 
     public User(UserCreateDto userToCreate) {

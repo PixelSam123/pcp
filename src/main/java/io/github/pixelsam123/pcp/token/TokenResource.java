@@ -12,6 +12,8 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.RestForm;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
+import java.util.Set;
+
 @Path("/token")
 public class TokenResource {
     private final Argon2PasswordEncoder argon2PasswordEncoder;
@@ -68,6 +70,6 @@ public class TokenResource {
     }
 
     private String createToken(String id, String username) {
-        return Jwt.subject(id).upn(username).sign();
+        return Jwt.subject(id).upn(username).groups(Set.of("User")).sign();
     }
 }

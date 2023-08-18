@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 @Entity
 public class ChallengeSubmissionVote {
     private Long id;
-    private boolean upvote;
+    private boolean isUpvote;
 
     private User user;
     private ChallengeSubmission challengeSubmission;
@@ -19,8 +19,8 @@ public class ChallengeSubmissionVote {
     }
 
     @Column(nullable = false)
-    public boolean isUpvote() {
-        return upvote;
+    public boolean getIsUpvote() {
+        return isUpvote;
     }
 
     @ManyToOne
@@ -31,5 +31,21 @@ public class ChallengeSubmissionVote {
     @ManyToOne
     public ChallengeSubmission getChallengeSubmission() {
         return challengeSubmission;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setIsUpvote(boolean isUpvote) {
+        this.isUpvote = isUpvote;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setChallengeSubmission(ChallengeSubmission challengeSubmission) {
+        this.challengeSubmission = challengeSubmission;
     }
 }

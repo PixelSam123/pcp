@@ -23,6 +23,18 @@ public class Challenge {
     private List<ChallengeComment> challengeComments;
     private List<ChallengeVote> challengeVotes;
 
+    public Challenge() {
+    }
+
+    public Challenge(ChallengeCreateDto challengeToCreate, User user) {
+        this.name = challengeToCreate.name();
+        this.description = challengeToCreate.description();
+        this.initialCode = challengeToCreate.initialCode();
+        this.testCase = challengeToCreate.testCase();
+        this.tier = challengeToCreate.tier();
+        this.user = user;
+    }
+
     @Id
     @GeneratedValue
     public Long getId() {
