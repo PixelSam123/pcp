@@ -21,6 +21,8 @@ public class ChallengeVote {
         Challenge challenge
     ) {
         this.isUpvote = challengeVoteToCreate.isUpvote();
+        this.user = user;
+        this.challenge = challenge;
     }
 
     @Id

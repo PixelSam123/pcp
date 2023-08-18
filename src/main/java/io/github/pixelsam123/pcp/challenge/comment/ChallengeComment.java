@@ -12,6 +12,19 @@ public class ChallengeComment {
     private User user;
     private Challenge challenge;
 
+    public ChallengeComment() {
+    }
+
+    public ChallengeComment(
+        ChallengeCommentCreateDto challengeCommentToCreate,
+        User user,
+        Challenge challenge
+    ) {
+        this.content = challengeCommentToCreate.content();
+        this.user = user;
+        this.challenge = challenge;
+    }
+
     @Id
     @GeneratedValue
     public Long getId() {

@@ -114,7 +114,8 @@ public class ChallengeVoteResource {
                 challengeVoteRepository.persist(challengeVote);
 
                 return new ChallengeVoteDto(challengeVote);
-            });
+            })
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
     @GET
