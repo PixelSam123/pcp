@@ -31,20 +31,33 @@ public class TokenResource {
     public Uni<Token> loginForToken(@RestForm String username, @RestForm String password) {
         return Uni
             .createFrom()
-            .<User>item(() -> userRepository.find("name", username).firstResult())
+            .item(() -> userRepository.find("name", username).firstResultOptional())
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
             .map(Unchecked.function(dbUser -> {
-                if (dbUser == null || !verifyPassword(password, dbUser.getPasswordHash())) {
+                if (dbUser.isEmpty()) {
                     throw new BadRequestException(
                         Response
                             .status(Response.Status.BAD_REQUEST)
                             .header("WWW-Authenticate", "Bearer")
-                            .entity("Incorrect username or password")
+                            .entity("Incorrect username")
                             .build()
                     );
                 }
 
-                String token = createToken(dbUser.getId().toString(), dbUser.getName());
+                User existingDbUser = dbUser.get();
+
+                if (!verifyPassword(password, existingDbUser.getPasswordHash())) {
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .header("WWW-Authenticate", "Bearer")
+                            .entity("Incorrect password")
+                            .build()
+                    );
+                }
+
+                String token =
+                    createToken(existingDbUser.getId().toString(), existingDbUser.getName());
 
                 return new Token(token, "Bearer");
             }));

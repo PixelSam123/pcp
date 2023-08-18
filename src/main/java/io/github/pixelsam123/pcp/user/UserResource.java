@@ -60,15 +60,15 @@ public class UserResource {
     public Uni<UserBriefDto> getUser(@PathParam("name") String name) {
         return Uni
             .createFrom()
-            .<UserBriefDto>item(
+            .item(
                 () -> userRepository
                     .find("name", name)
                     .project(UserBriefDto.class)
-                    .firstResult()
+                    .firstResultOptional()
             )
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
             .map(Unchecked.function(dbUser -> {
-                if (dbUser == null) {
+                if (dbUser.isEmpty()) {
                     throw new NotFoundException(
                         Response
                             .status(Response.Status.NOT_FOUND)
@@ -77,7 +77,7 @@ public class UserResource {
                     );
                 }
 
-                return dbUser;
+                return dbUser.get();
             }));
     }
 }
