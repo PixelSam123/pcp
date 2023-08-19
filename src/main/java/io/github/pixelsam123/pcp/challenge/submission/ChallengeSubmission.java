@@ -29,4 +29,17 @@ public class ChallengeSubmission {
     private List<ChallengeSubmissionComment> challengeSubmissionComments;
     @OneToMany(mappedBy = "challengeSubmission")
     private List<ChallengeSubmissionVote> challengeSubmissionVotes;
+
+    public ChallengeSubmission() {
+    }
+
+    public ChallengeSubmission(
+        ChallengeSubmissionCreateDto challengeSubmissionCreateDto,
+        User user,
+        Challenge challenge
+    ) {
+        this.code = challengeSubmissionCreateDto.code();
+        this.user = user;
+        this.challenge = challenge;
+    }
 }

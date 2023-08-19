@@ -20,4 +20,17 @@ public class ChallengeSubmissionComment {
     private User user;
     @ManyToOne
     private ChallengeSubmission challengeSubmission;
+
+    public ChallengeSubmissionComment() {
+    }
+
+    public ChallengeSubmissionComment(
+        ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,
+        User user,
+        ChallengeSubmission challengeSubmission
+    ) {
+        this.content = challengeSubmissionCommentToCreate.content();
+        this.user = user;
+        this.challengeSubmission = challengeSubmission;
+    }
 }
