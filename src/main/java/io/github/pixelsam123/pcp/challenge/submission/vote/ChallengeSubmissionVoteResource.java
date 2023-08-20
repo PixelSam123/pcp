@@ -5,7 +5,6 @@ import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionReposit
 import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
@@ -47,12 +46,8 @@ public class ChallengeSubmissionVoteResource {
         ChallengeSubmissionVoteCreateDto challengeSubmissionVoteToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = Uni
-            .createFrom()
-            .item(() -> userRepository
-                .find("name", ctx.getUserPrincipal().getName())
-                .singleResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+        Uni<User> existingUserRetrieval = userRepository
+            .asyncFindByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException(
@@ -66,26 +61,25 @@ public class ChallengeSubmissionVoteResource {
                 return dbUser.get();
             }));
 
-        Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeSubmissionRepository.findByIdOptional(
-                challengeSubmissionVoteToCreate.submissionId()))
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval =
+            challengeSubmissionRepository.asyncFindById(challengeSubmissionVoteToCreate.submissionId());
 
-        Uni<Long> challengeSubmissionVoteCountRetrieval = existingUserRetrieval
-            .map(existingDbUser -> challengeSubmissionVoteRepository
-                .find(
-                    "userId = ?1 and submissionId = ?2",
-                    existingDbUser.getId(),
-                    challengeSubmissionVoteToCreate.submissionId()
+        Uni<Long> challengeSubmissionVoteCountRetrieval = existingUserRetrieval.flatMap(
+            existingDbUser -> challengeSubmissionVoteRepository
+                .asyncCountByChallengeSubmissionIdAndUserId(
+                    challengeSubmissionVoteToCreate.submissionId(),
+                    existingDbUser.getId()
                 )
-                .count())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        );
 
         return Uni
             .combine()
             .all()
-            .unis(existingUserRetrieval, challengeSubmissionRetrieval, challengeSubmissionVoteCountRetrieval)
+            .unis(
+                existingUserRetrieval,
+                challengeSubmissionRetrieval,
+                challengeSubmissionVoteCountRetrieval
+            )
             .asTuple()
             .map(Unchecked.function((tuple) -> {
                 User existingDbUser = tuple.getItem1();
@@ -116,12 +110,11 @@ public class ChallengeSubmissionVoteResource {
                     dbChallengeSubmission.get()
                 );
             }))
-            .map(challengeSubmissionVote -> {
-                challengeSubmissionVoteRepository.persist(challengeSubmissionVote);
-
-                return new ChallengeSubmissionVoteDto(challengeSubmissionVote);
-            })
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+            .flatMap(
+                challengeSubmissionVote -> challengeSubmissionVoteRepository
+                    .asyncPersist(challengeSubmissionVote)
+                    .map((unused) -> new ChallengeSubmissionVoteDto(challengeSubmissionVote))
+            );
     }
 
     @GET
@@ -130,12 +123,9 @@ public class ChallengeSubmissionVoteResource {
     public Uni<List<ChallengeSubmissionVoteDto>> getChallengeSubmissionVotesBySubmissionName(
         @PathParam("submission_name") String submissionName
     ) {
-        Uni<Long> submissionIdRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeSubmissionRepository
-                .find("name", submissionName)
-                .firstResultOptional()
-                .map(ChallengeSubmission::getId))
+        Uni<Long> submissionIdRetrieval = challengeSubmissionRepository
+            .asyncFindByName(submissionName)
+            .map(dbSubmission -> dbSubmission.map(ChallengeSubmission::getId))
             .map(Unchecked.function(dbSubmissionId -> {
                 if (dbSubmissionId.isEmpty()) {
                     throw new NotFoundException(
@@ -150,10 +140,7 @@ public class ChallengeSubmissionVoteResource {
             }));
 
         return submissionIdRetrieval
-            .map(existingDbSubmissionId -> challengeSubmissionVoteRepository
-                .find("submissionId", existingDbSubmissionId)
-                .project(ChallengeSubmissionVoteDto.class)
-                .list());
+            .flatMap(challengeSubmissionVoteRepository::asyncListByChallengeSubmissionId);
     }
 
     @DELETE
@@ -161,26 +148,18 @@ public class ChallengeSubmissionVoteResource {
     @Path("/{id}")
     @ResponseStatus(RestResponse.StatusCode.NO_CONTENT)
     public Uni<Void> deleteSubmissionVote(@PathParam("id") long id, @Context SecurityContext ctx) {
-        Uni<Optional<Long>> userIdRetrieval = Uni
-            .createFrom()
-            .item(() -> userRepository
-                .find("name", ctx.getUserPrincipal().getName())
-                .singleResultOptional()
-                .map(User::getId))
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        Uni<Optional<Long>> userIdRetrieval = userRepository
+            .asyncFindByName(ctx.getUserPrincipal().getName())
+            .map(dbUser -> dbUser.map(User::getId));
 
-        Uni<Optional<Long>> challengeSubmissionVoteIdRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeSubmissionVoteRepository
-                .findByIdOptional(id)
-                .map(ChallengeSubmissionVote::getId))
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        Uni<Optional<ChallengeSubmissionVote>> challengeSubmissionVoteRetrieval =
+            challengeSubmissionVoteRepository.asyncFindById(id);
 
         return Uni
             .combine()
             .all()
-            .unis(userIdRetrieval, challengeSubmissionVoteIdRetrieval)
-            .combinedWith(Unchecked.function((dbUserId, dbChallengeSubmissionVoteId) -> {
+            .unis(userIdRetrieval, challengeSubmissionVoteRetrieval)
+            .combinedWith(Unchecked.function((dbUserId, dbChallengeSubmissionVote) -> {
                 if (dbUserId.isEmpty()) {
                     throw new BadRequestException(
                         Response
@@ -190,7 +169,7 @@ public class ChallengeSubmissionVoteResource {
                     );
                 }
 
-                if (dbChallengeSubmissionVoteId.isEmpty()) {
+                if (dbChallengeSubmissionVote.isEmpty()) {
                     throw new NotFoundException(
                         Response
                             .status(Response.Status.NOT_FOUND)
@@ -199,10 +178,10 @@ public class ChallengeSubmissionVoteResource {
                     );
                 }
 
-                long existingDbUserId = dbUserId.get();
-                long existingDbSubmissionVoteId = dbChallengeSubmissionVoteId.get();
+                Long existingDbUserId = dbUserId.get();
+                ChallengeSubmissionVote existingDbSubmissionVote = dbChallengeSubmissionVote.get();
 
-                if (existingDbUserId != existingDbSubmissionVoteId) {
+                if (!existingDbUserId.equals(existingDbSubmissionVote.getUser().getId())) {
                     throw new ForbiddenException(
                         Response
                             .status(Response.Status.FORBIDDEN)
@@ -213,12 +192,19 @@ public class ChallengeSubmissionVoteResource {
 
                 return null;
             }))
-            .map(unused -> {
-                challengeSubmissionVoteRepository.deleteById(id);
+            .flatMap(unused -> challengeSubmissionVoteRepository
+                .asyncDeleteById(id)
+                .map(Unchecked.function((Boolean isDeleted) -> {
+                    if (!isDeleted) {
+                        throw new InternalServerErrorException(
+                            Response
+                                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                                .entity("Failed to delete challenge vote")
+                                .build()
+                        );
+                    }
 
-                return null;
-            })
-            .replaceWithVoid()
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+                    return null;
+                })));
     }
 }

@@ -3,7 +3,6 @@ package io.github.pixelsam123.pcp.challenge;
 import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
@@ -38,17 +37,11 @@ public class ChallengeResource {
     public Uni<ChallengeDto> createChallenge(
         ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx
     ) {
-        Uni<Optional<User>> userRetrieval = Uni
-            .createFrom()
-            .item(() -> userRepository
-                .find("name", ctx.getUserPrincipal().getName())
-                .singleResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        Uni<Optional<User>> userRetrieval =
+            userRepository.asyncFindByName(ctx.getUserPrincipal().getName());
 
-        Uni<Long> challengeCountRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeRepository.find("name", challengeToCreate.name()).count())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        Uni<Long> challengeCountRetrieval =
+            challengeRepository.asyncCountByName(challengeToCreate.name());
 
         return Uni
             .combine()
@@ -75,34 +68,25 @@ public class ChallengeResource {
 
                 return new Challenge(challengeToCreate, dbUser.get());
             }))
-            .map(challenge -> {
-                challengeRepository.persist(challenge);
-
-                return new ChallengeDto(challenge);
-            })
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+            .flatMap(
+                challenge -> challengeRepository
+                    .asyncPersist(challenge)
+                    .map((unused) -> new ChallengeDto(challenge))
+            );
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<ChallengeBriefDto>> getChallenges() {
-        return Uni
-            .createFrom()
-            .item(() -> challengeRepository.findAll().project(ChallengeBriefDto.class).list())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return challengeRepository.asyncListAllBrief();
     }
 
     @GET
     @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<ChallengeDto> getChallengeByName(@PathParam("name") String name) {
-        return Uni
-            .createFrom()
-            .item(() -> challengeRepository
-                .find("name", name)
-                .project(ChallengeDto.class)
-                .firstResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+        return challengeRepository
+            .asyncFindByNameDto(name)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
                     throw new NotFoundException(

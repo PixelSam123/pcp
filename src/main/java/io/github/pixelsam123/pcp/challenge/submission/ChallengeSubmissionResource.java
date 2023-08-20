@@ -2,12 +2,9 @@ package io.github.pixelsam123.pcp.challenge.submission;
 
 import io.github.pixelsam123.pcp.challenge.Challenge;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
-import io.github.pixelsam123.pcp.challenge.vote.ChallengeVote;
-import io.github.pixelsam123.pcp.challenge.vote.ChallengeVoteDto;
 import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
@@ -46,12 +43,8 @@ public class ChallengeSubmissionResource {
         ChallengeSubmissionCreateDto challengeSubmissionToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = Uni
-            .createFrom()
-            .item(() -> userRepository
-                .find("name", ctx.getUserPrincipal().getName())
-                .singleResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+        Uni<User> existingUserRetrieval = userRepository
+            .asyncFindByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException(
@@ -65,10 +58,8 @@ public class ChallengeSubmissionResource {
                 return dbUser.get();
             }));
 
-        Uni<Challenge> existingChallengeRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeRepository.findByIdOptional(challengeSubmissionToCreate.challengeId()))
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+        Uni<Challenge> existingChallengeRetrieval = challengeRepository
+            .asyncFindById(challengeSubmissionToCreate.challengeId())
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
                     throw new BadRequestException(
@@ -82,15 +73,11 @@ public class ChallengeSubmissionResource {
                 return dbChallenge.get();
             }));
 
-        Uni<Long> challengeSubmissionCountRetrieval = existingUserRetrieval
-            .map(existingDbUser -> challengeSubmissionRepository
-                .find(
-                    "userId = ?1 and challengeId = ?2",
-                    existingDbUser.getId(),
-                    challengeSubmissionToCreate.challengeId()
-                )
-                .count())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        Uni<Long> challengeSubmissionCountRetrieval = existingUserRetrieval.flatMap(
+            existingDbUser -> challengeSubmissionRepository.asyncCountByChallengeIdAndUserId(
+                challengeSubmissionToCreate.challengeId(), existingDbUser.getId()
+            )
+        );
 
         return Uni
             .combine()
@@ -101,27 +88,34 @@ public class ChallengeSubmissionResource {
                 challengeSubmissionCountRetrieval
             )
             .asTuple()
-            .map(Unchecked.function((tuple) -> {
+            .flatMap(Unchecked.function((tuple) -> {
                 User existingDbUser = tuple.getItem1();
                 Challenge existingDbChallenge = tuple.getItem2();
                 long dbChallengeSubmissionCount = tuple.getItem3();
-
-                if (dbChallengeSubmissionCount < 1) {
-                    existingDbUser.setPoints(
-                        existingDbUser.getPoints() + pointsForTier(existingDbChallenge.getTier())
-                    );
-                }
 
                 ChallengeSubmission challengeSubmission = new ChallengeSubmission(
                     challengeSubmissionToCreate,
                     existingDbUser,
                     existingDbChallenge
                 );
-                challengeSubmissionRepository.persist(challengeSubmission);
 
-                return new ChallengeSubmissionDto(challengeSubmission);
-            }))
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+                Uni<Void> pointsAdditionTask =
+                    dbChallengeSubmissionCount < 1 ? userRepository.asyncAddPoints(
+                        existingDbUser,
+                        pointsForTier(existingDbChallenge.getTier())
+                    ) : Uni.createFrom().voidItem();
+
+                return Uni
+                    .combine()
+                    .all()
+                    .unis(
+                        challengeSubmissionRepository.asyncPersist(challengeSubmission),
+                        pointsAdditionTask
+                    )
+                    .combinedWith(
+                        (unused1, unused2) -> new ChallengeSubmissionDto(challengeSubmission)
+                    );
+            }));
     }
 
     @GET
@@ -130,14 +124,10 @@ public class ChallengeSubmissionResource {
     public Uni<List<ChallengeSubmissionDto>> getChallengeSubmissionsByChallengeName(
         @PathParam("challenge_name") String challengeName
     ) {
-        Uni<Long> challengeIdRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeRepository
-                .find("name", challengeName)
-                .firstResultOptional()
-                .map(Challenge::getId))
-            .map(Unchecked.function(dbChallengeId -> {
-                if (dbChallengeId.isEmpty()) {
+        Uni<Long> challengeIdRetrieval = challengeRepository
+            .asyncFindByName(challengeName)
+            .map(Unchecked.function(dbChallenge -> {
+                if (dbChallenge.isEmpty()) {
                     throw new NotFoundException(
                         Response
                             .status(Response.Status.NOT_FOUND)
@@ -146,14 +136,10 @@ public class ChallengeSubmissionResource {
                     );
                 }
 
-                return dbChallengeId.get();
+                return dbChallenge.get().getId();
             }));
 
-        return challengeIdRetrieval
-            .map(existingDbChallengeId -> challengeSubmissionRepository
-                .find("challengeId", existingDbChallengeId)
-                .project(ChallengeSubmissionDto.class)
-                .list());
+        return challengeIdRetrieval.flatMap(challengeSubmissionRepository::asyncListByChallengeId);
     }
 
     private int pointsForTier(int tier) {

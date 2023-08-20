@@ -1,7 +1,6 @@
 package io.github.pixelsam123.pcp.user;
 
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -25,10 +24,8 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Uni<UserBriefDto> createUser(UserCreateDto userToCreate) {
-        return Uni
-            .createFrom()
-            .item(() -> userRepository.find("name", userToCreate.name()).count())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+        return userRepository
+            .asyncCountByName(userToCreate.name())
             .map(Unchecked.function(dbUserCount -> {
                 if (dbUserCount > 0) {
                     throw new BadRequestException(
@@ -41,35 +38,23 @@ public class UserResource {
 
                 return new User(userToCreate);
             }))
-            .map(user -> {
-                userRepository.persist(user);
-
-                return new UserBriefDto(user);
-            })
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+            .flatMap(
+                user -> userRepository.asyncPersist(user).map((unused) -> new UserBriefDto(user))
+            );
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<UserBriefDto>> getUsers() {
-        return Uni
-            .createFrom()
-            .item(() -> userRepository.findAll().project(UserBriefDto.class).list())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return userRepository.asyncListAllBrief();
     }
 
     @GET
     @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<UserBriefDto> getUserByName(@PathParam("name") String name) {
-        return Uni
-            .createFrom()
-            .item(() -> userRepository
-                .find("name", name)
-                .project(UserBriefDto.class)
-                .firstResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
-            .map(Unchecked.function(dbUser -> {
+        return userRepository.asyncFindByNameBrief(name).map(
+            Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new NotFoundException(
                         Response
@@ -80,6 +65,7 @@ public class UserResource {
                 }
 
                 return dbUser.get();
-            }));
+            })
+        );
     }
 }

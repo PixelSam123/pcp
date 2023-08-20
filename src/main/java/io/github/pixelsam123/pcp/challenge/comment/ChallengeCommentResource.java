@@ -5,7 +5,6 @@ import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
@@ -42,12 +41,8 @@ public class ChallengeCommentResource {
     public Uni<ChallengeCommentDto> createChallengeComment(
         ChallengeCommentCreateDto challengeCommentToCreate, @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = Uni
-            .createFrom()
-            .item(() -> userRepository
-                .find("name", ctx.getUserPrincipal().getName())
-                .singleResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+        Uni<User> existingUserRetrieval = userRepository
+            .asyncFindByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException(
@@ -61,10 +56,8 @@ public class ChallengeCommentResource {
                 return dbUser.get();
             }));
 
-        Uni<Optional<Challenge>> challengeRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeRepository.findByIdOptional(challengeCommentToCreate.challengeId()))
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        Uni<Optional<Challenge>> challengeRetrieval =
+            challengeRepository.asyncFindById(challengeCommentToCreate.challengeId());
 
         return Uni
             .combine()
@@ -86,12 +79,11 @@ public class ChallengeCommentResource {
                     dbChallenge.get()
                 );
             }))
-            .map(challengeComment -> {
-                challengeCommentRepository.persist(challengeComment);
-
-                return new ChallengeCommentDto(challengeComment);
-            })
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+            .flatMap(
+                challengeComment -> challengeCommentRepository
+                    .asyncPersist(challengeComment)
+                    .map((unused) -> new ChallengeCommentDto(challengeComment))
+            );
     }
 
     @GET
@@ -100,14 +92,10 @@ public class ChallengeCommentResource {
     public Uni<List<ChallengeCommentDto>> getChallengeCommentsByChallengeName(
         @PathParam("challenge_name") String challengeName
     ) {
-        Uni<Long> challengeIdRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeRepository
-                .find("name", challengeName)
-                .firstResultOptional()
-                .map(Challenge::getId))
-            .map(Unchecked.function(dbChallengeId -> {
-                if (dbChallengeId.isEmpty()) {
+        Uni<Long> challengeIdRetrieval = challengeRepository
+            .asyncFindByName(challengeName)
+            .map(Unchecked.function(dbChallenge -> {
+                if (dbChallenge.isEmpty()) {
                     throw new NotFoundException(
                         Response
                             .status(Response.Status.NOT_FOUND)
@@ -116,13 +104,9 @@ public class ChallengeCommentResource {
                     );
                 }
 
-                return dbChallengeId.get();
+                return dbChallenge.get().getId();
             }));
 
-        return challengeIdRetrieval
-            .map(existingDbChallengeId -> challengeCommentRepository
-                .find("challengeId", existingDbChallengeId)
-                .project(ChallengeCommentDto.class)
-                .list());
+        return challengeIdRetrieval.flatMap(challengeCommentRepository::asyncListByChallengeId);
     }
 }

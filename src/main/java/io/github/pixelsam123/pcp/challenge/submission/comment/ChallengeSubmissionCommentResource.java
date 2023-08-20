@@ -5,7 +5,6 @@ import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionReposit
 import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
@@ -43,12 +42,8 @@ public class ChallengeSubmissionCommentResource {
         ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = Uni
-            .createFrom()
-            .item(() -> userRepository
-                .find("name", ctx.getUserPrincipal().getName())
-                .singleResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+        Uni<User> existingUserRetrieval = userRepository
+            .asyncFindByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException(
@@ -62,12 +57,8 @@ public class ChallengeSubmissionCommentResource {
                 return dbUser.get();
             }));
 
-        Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeSubmissionRepository.findByIdOptional(
-                challengeSubmissionCommentToCreate.submissionId()
-            ))
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval =
+            challengeSubmissionRepository.asyncFindById(challengeSubmissionCommentToCreate.submissionId());
 
         return Uni
             .combine()
@@ -89,12 +80,11 @@ public class ChallengeSubmissionCommentResource {
                     dbChallengeSubmission.get()
                 );
             }))
-            .map(challengeSubmissionComment -> {
-                challengeSubmissionCommentRepository.persist(challengeSubmissionComment);
-
-                return new ChallengeSubmissionCommentDto(challengeSubmissionComment);
-            })
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+            .flatMap(
+                challengeSubmissionComment -> challengeSubmissionCommentRepository
+                    .asyncPersist(challengeSubmissionComment)
+                    .map((unused) -> new ChallengeSubmissionCommentDto(challengeSubmissionComment))
+            );
     }
 
     @GET
@@ -103,14 +93,10 @@ public class ChallengeSubmissionCommentResource {
     public Uni<List<ChallengeSubmissionCommentDto>> getChallengeSubmissionCommentsByChallengeName(
         @PathParam("challenge_name") String challengeName
     ) {
-        Uni<Long> challengeSubmissionIdRetrieval = Uni
-            .createFrom()
-            .item(() -> challengeSubmissionRepository
-                .find("name", challengeName)
-                .firstResultOptional()
-                .map(ChallengeSubmission::getId))
-            .map(Unchecked.function(dbChallengeSubmissionId -> {
-                if (dbChallengeSubmissionId.isEmpty()) {
+        Uni<Long> challengeSubmissionIdRetrieval = challengeSubmissionRepository
+            .asyncFindByName(challengeName)
+            .map(Unchecked.function(dbChallenge -> {
+                if (dbChallenge.isEmpty()) {
                     throw new NotFoundException(
                         Response
                             .status(Response.Status.NOT_FOUND)
@@ -119,13 +105,11 @@ public class ChallengeSubmissionCommentResource {
                     );
                 }
 
-                return dbChallengeSubmissionId.get();
+                return dbChallenge.get().getId();
             }));
 
-        return challengeSubmissionIdRetrieval
-            .map(existingDbChallengeSubmissionId -> challengeSubmissionCommentRepository
-                .find("challengeSubmissionId", existingDbChallengeSubmissionId)
-                .project(ChallengeSubmissionCommentDto.class)
-                .list());
+        return challengeSubmissionIdRetrieval.flatMap(
+            challengeSubmissionCommentRepository::asyncListByChallengeSubmissionId
+        );
     }
 }
