@@ -24,13 +24,6 @@ public class ChallengeSubmissionRepository implements PanacheRepository<Challeng
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<ChallengeSubmission>> asyncFindByName(String name) {
-        return Uni
-            .createFrom()
-            .item(() -> find("name", name).firstResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
-    }
-
     public Uni<List<ChallengeSubmissionDto>> asyncListByChallengeId(Long challengeId) {
         return Uni
             .createFrom()

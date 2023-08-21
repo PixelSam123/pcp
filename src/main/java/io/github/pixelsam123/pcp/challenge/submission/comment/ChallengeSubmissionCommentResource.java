@@ -17,7 +17,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Optional;
 
-@Path("/challenge_comments")
+@Path("/challenge_submission_comments")
 public class ChallengeSubmissionCommentResource {
     private final ChallengeSubmissionRepository challengeSubmissionRepository;
     private final ChallengeSubmissionCommentRepository challengeSubmissionCommentRepository;
@@ -88,28 +88,12 @@ public class ChallengeSubmissionCommentResource {
     }
 
     @GET
-    @Path("/{challenge_name}")
+    @Path("/{challenge_submission_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionCommentDto>> getChallengeSubmissionCommentsByChallengeName(
-        @PathParam("challenge_name") String challengeName
+    public Uni<List<ChallengeSubmissionCommentDto>> getChallengeSubmissionCommentsByChallengeSubmissionId(
+        @PathParam("challenge_submission_id") long challengeSubmissionId
     ) {
-        Uni<Long> challengeSubmissionIdRetrieval = challengeSubmissionRepository
-            .asyncFindByName(challengeName)
-            .map(Unchecked.function(dbChallenge -> {
-                if (dbChallenge.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge submission Not Found")
-                            .build()
-                    );
-                }
-
-                return dbChallenge.get().getId();
-            }));
-
-        return challengeSubmissionIdRetrieval.flatMap(
-            challengeSubmissionCommentRepository::asyncListByChallengeSubmissionId
-        );
+        return challengeSubmissionCommentRepository
+            .asyncListByChallengeSubmissionId(challengeSubmissionId);
     }
 }

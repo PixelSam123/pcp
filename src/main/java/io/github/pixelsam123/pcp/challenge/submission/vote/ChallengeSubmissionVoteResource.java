@@ -20,8 +20,8 @@ import org.jboss.resteasy.reactive.RestResponse;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(ref = "submission_votes")
-@Path("/submission_votes")
+@Tag(ref = "challenge_submission_votes")
+@Path("/challenge_submission_votes")
 public class ChallengeSubmissionVoteResource {
     private final ChallengeSubmissionRepository challengeSubmissionRepository;
     private final ChallengeSubmissionVoteRepository challengeSubmissionVoteRepository;
@@ -118,29 +118,12 @@ public class ChallengeSubmissionVoteResource {
     }
 
     @GET
-    @Path("/{submission_name}")
+    @Path("/{submission_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionVoteDto>> getChallengeSubmissionVotesBySubmissionName(
-        @PathParam("submission_name") String submissionName
+    public Uni<List<ChallengeSubmissionVoteDto>> getChallengeSubmissionVotesBySubmissionId(
+        @PathParam("submission_id") long submissionId
     ) {
-        Uni<Long> submissionIdRetrieval = challengeSubmissionRepository
-            .asyncFindByName(submissionName)
-            .map(dbSubmission -> dbSubmission.map(ChallengeSubmission::getId))
-            .map(Unchecked.function(dbSubmissionId -> {
-                if (dbSubmissionId.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Submission Not Found")
-                            .build()
-                    );
-                }
-
-                return dbSubmissionId.get();
-            }));
-
-        return submissionIdRetrieval
-            .flatMap(challengeSubmissionVoteRepository::asyncListByChallengeSubmissionId);
+        return challengeSubmissionVoteRepository.asyncListByChallengeSubmissionId(submissionId);
     }
 
     @DELETE
