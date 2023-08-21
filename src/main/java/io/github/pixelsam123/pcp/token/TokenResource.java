@@ -4,7 +4,6 @@ import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.jwt.build.Jwt;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
