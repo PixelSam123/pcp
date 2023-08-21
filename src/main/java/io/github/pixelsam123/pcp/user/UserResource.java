@@ -7,15 +7,21 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
 import java.util.List;
 
 @Tag(ref = "users")
 @Path("/users")
 public class UserResource {
+    private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final UserRepository userRepository;
 
-    public UserResource(UserRepository userRepository) {
+    public UserResource(
+        Argon2PasswordEncoder argon2PasswordEncoder,
+        UserRepository userRepository
+    ) {
+        this.argon2PasswordEncoder = argon2PasswordEncoder;
         this.userRepository = userRepository;
     }
 
@@ -36,7 +42,10 @@ public class UserResource {
                     );
                 }
 
-                return new User(userToCreate);
+                return new User(
+                    userToCreate,
+                    argon2PasswordEncoder.encode(userToCreate.password())
+                );
             }))
             .flatMap(
                 user -> userRepository.asyncPersist(user).map((unused) -> new UserBriefDto(user))

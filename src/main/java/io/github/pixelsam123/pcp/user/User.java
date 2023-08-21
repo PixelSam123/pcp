@@ -42,9 +42,9 @@ public class User {
     public User() {
     }
 
-    public User(UserCreateDto userToCreate) {
+    public User(UserCreateDto userToCreate, String passwordHash) {
         this.name = userToCreate.name();
-        this.passwordHash = userToCreate.password();
+        this.passwordHash = passwordHash;
         this.points = 0;
     }
 }
