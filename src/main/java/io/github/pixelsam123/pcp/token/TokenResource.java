@@ -31,10 +31,8 @@ public class TokenResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Token> loginForToken(@RestForm String username, @RestForm String password) {
-        return Uni
-            .createFrom()
-            .item(() -> userRepository.find("name", username).firstResultOptional())
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+        return userRepository
+            .asyncFindByName(username)
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException(
