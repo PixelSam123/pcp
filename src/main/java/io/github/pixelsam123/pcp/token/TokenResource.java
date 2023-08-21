@@ -8,6 +8,7 @@ import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.RestForm;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
@@ -18,13 +19,16 @@ import java.util.Set;
 public class TokenResource {
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final UserRepository userRepository;
+    private final String tokenSecretKey;
 
     public TokenResource(
         Argon2PasswordEncoder argon2PasswordEncoder,
-        UserRepository userRepository
+        UserRepository userRepository,
+        @ConfigProperty(name = "token_secret_key") String tokenSecretKey
     ) {
         this.argon2PasswordEncoder = argon2PasswordEncoder;
         this.userRepository = userRepository;
+        this.tokenSecretKey = tokenSecretKey;
     }
 
     @POST
@@ -73,6 +77,6 @@ public class TokenResource {
             .upn(username)
             .groups(Set.of("User"))
             .expiresIn(Duration.ofMinutes(60))
-            .sign();
+            .signWithSecret(tokenSecretKey);
     }
 }
