@@ -5,7 +5,7 @@ import io.github.pixelsam123.pcp.user.UserBriefDto;
 public record ChallengeSubmissionCommentDto(
     long id,
     String content,
-    UserBriefDto userBriefDto
+    UserBriefDto user
 ) {
     public ChallengeSubmissionCommentDto(ChallengeSubmissionComment challengeSubmissionComment) {
         this(
