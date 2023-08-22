@@ -13,10 +13,12 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
 import java.util.Optional;
 
+@Tag(ref = "challenge_submission_comments")
 @Path("/challenge_submission_comments")
 public class ChallengeSubmissionCommentResource {
     private final ChallengeSubmissionRepository challengeSubmissionRepository;
