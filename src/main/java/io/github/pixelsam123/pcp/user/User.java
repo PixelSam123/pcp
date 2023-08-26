@@ -6,6 +6,9 @@ import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmission;
 import io.github.pixelsam123.pcp.challenge.submission.comment.ChallengeSubmissionComment;
 import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVote;
 import io.github.pixelsam123.pcp.challenge.vote.ChallengeVote;
+import io.quarkus.security.jpa.Password;
+import io.quarkus.security.jpa.Roles;
+import io.quarkus.security.jpa.Username;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,9 +23,13 @@ public class User {
     @GeneratedValue
     private Long id;
     @Column(unique = true)
+    @Username
     private String name;
     @Column(nullable = false)
+    @Password
     private String passwordHash;
+    @Roles
+    private String role;
     @Column(columnDefinition = "int default 0")
     private int points;
 
@@ -45,6 +52,7 @@ public class User {
     public User(UserCreateDto userToCreate, String passwordHash) {
         this.name = userToCreate.name();
         this.passwordHash = passwordHash;
+        this.role = "User";
         this.points = 0;
     }
 }
