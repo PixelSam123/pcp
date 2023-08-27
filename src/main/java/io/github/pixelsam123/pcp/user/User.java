@@ -33,19 +33,6 @@ public class User {
     @Column(columnDefinition = "int default 0")
     private int points;
 
-    @OneToMany(mappedBy = "user")
-    private List<Challenge> challenges;
-    @OneToMany(mappedBy = "user")
-    private List<ChallengeSubmission> challengeSubmissions;
-    @OneToMany(mappedBy = "user")
-    private List<ChallengeComment> challengeComments;
-    @OneToMany(mappedBy = "user")
-    private List<ChallengeSubmissionComment> challengeSubmissionComments;
-    @OneToMany(mappedBy = "user")
-    private List<ChallengeVote> challengeVotes;
-    @OneToMany(mappedBy = "user")
-    private List<ChallengeSubmissionVote> challengeSubmissionVotes;
-
     public User() {
     }
 

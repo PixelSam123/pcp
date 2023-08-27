@@ -25,11 +25,6 @@ public class ChallengeSubmission {
     @ManyToOne
     private Challenge challenge;
 
-    @OneToMany(mappedBy = "challengeSubmission")
-    private List<ChallengeSubmissionComment> challengeSubmissionComments;
-    @OneToMany(mappedBy = "challengeSubmission")
-    private List<ChallengeSubmissionVote> challengeSubmissionVotes;
-
     public ChallengeSubmission() {
     }
 

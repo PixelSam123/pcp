@@ -33,13 +33,6 @@ public class Challenge {
     @ManyToOne
     private User user;
 
-    @OneToMany(mappedBy = "challenge")
-    private List<ChallengeSubmission> challengeSubmissions;
-    @OneToMany(mappedBy = "challenge")
-    private List<ChallengeComment> challengeComments;
-    @OneToMany(mappedBy = "challenge")
-    private List<ChallengeVote> challengeVotes;
-
     public Challenge() {
     }
 
