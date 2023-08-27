@@ -6,6 +6,7 @@ public record ChallengeBriefDto(
     long id,
     String name,
     int tier,
+    int completedCount,
     UserBriefDto user
 ) {
 }

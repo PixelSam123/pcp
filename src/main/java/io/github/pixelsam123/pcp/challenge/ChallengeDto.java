@@ -6,6 +6,7 @@ public record ChallengeDto(
     long id,
     String name,
     int tier,
+    int completedCount,
     UserBriefDto user,
     String description,
     String initialCode
@@ -14,6 +15,7 @@ public record ChallengeDto(
         this(challenge.getId(),
             challenge.getName(),
             challenge.getTier(),
+            challenge.getCompletedCount(),
             new UserBriefDto(challenge.getUser()),
             challenge.getDescription(),
             challenge.getInitialCode()

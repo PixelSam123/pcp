@@ -45,6 +45,18 @@ public class ChallengeRepository implements PanacheRepository<Challenge> {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
+    public Uni<Void> asyncAddCompletedCount(Challenge challenge) {
+        return Uni
+            .createFrom()
+            .item(() -> {
+                challenge.setCompletedCount(challenge.getCompletedCount() + 1);
+
+                return null;
+            })
+            .replaceWithVoid()
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    }
+
     public Uni<Void> asyncPersist(Challenge challenge) {
         return Uni
             .createFrom()

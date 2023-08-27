@@ -105,16 +105,21 @@ public class ChallengeSubmissionResource {
                         pointsForTier(existingDbChallenge.getTier())
                     ) : Uni.createFrom().voidItem();
 
+                Uni<Void> challengeCompletedCountAdditionTask =
+                    dbChallengeSubmissionCount < 1 ? challengeRepository.asyncAddCompletedCount(
+                        existingDbChallenge
+                    ) : Uni.createFrom().voidItem();
+
                 return Uni
                     .combine()
                     .all()
                     .unis(
                         challengeSubmissionRepository.asyncPersist(challengeSubmission),
-                        pointsAdditionTask
+                        pointsAdditionTask,
+                        challengeCompletedCountAdditionTask
                     )
-                    .combinedWith(
-                        (unused1, unused2) -> new ChallengeSubmissionDto(challengeSubmission)
-                    );
+                    .asTuple()
+                    .map(unused -> new ChallengeSubmissionDto(challengeSubmission));
             }));
     }
 

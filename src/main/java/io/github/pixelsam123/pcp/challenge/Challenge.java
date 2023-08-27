@@ -27,6 +27,8 @@ public class Challenge {
     private String testCase;
     @Column(nullable = false)
     private int tier;
+    @Column(columnDefinition = "int default 0")
+    private int completedCount;
 
     @ManyToOne
     private User user;
@@ -48,5 +50,6 @@ public class Challenge {
         this.testCase = challengeToCreate.testCase();
         this.tier = challengeToCreate.tier();
         this.user = user;
+        this.completedCount = 0;
     }
 }
