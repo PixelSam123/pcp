@@ -17,7 +17,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
 
-@Tag(ref = "challenge_submissions")
+@Tag(
+    name = "challenge_submissions",
+    description = "Challenge submission creation, viewing and editing"
+)
 @Path("/challenge_submissions")
 public class ChallengeSubmissionResource {
     private final ChallengeRepository challengeRepository;

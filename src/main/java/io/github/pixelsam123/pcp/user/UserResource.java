@@ -11,7 +11,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
 
-@Tag(ref = "users")
+@Tag(name = "users", description = "User creation, viewing and editing")
 @Path("/users")
 public class UserResource {
     private final UserRepository userRepository;

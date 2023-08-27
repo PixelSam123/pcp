@@ -20,7 +20,7 @@ import org.jboss.resteasy.reactive.RestResponse;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(ref = "challenge_votes")
+@Tag(name = "challenge_votes", description = "Challenge vote creation, viewing and editing")
 @Path("/challenge_votes")
 public class ChallengeVoteResource {
     private final ChallengeRepository challengeRepository;
