@@ -7,7 +7,7 @@
 
 CREATE TABLE IF NOT EXISTS user
 (
-    id            BIGINT PRIMARY KEY,
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
     name          VARCHAR(255) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role          VARCHAR(255) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS user
 
 CREATE TABLE IF NOT EXISTS challenge
 (
-    id              BIGINT PRIMARY KEY,
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
     name            VARCHAR(255) UNIQUE,
     description     VARCHAR(255) NOT NULL,
     initial_code    VARCHAR(255) NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS challenge
 
 CREATE TABLE IF NOT EXISTS challenge_comment
 (
-    id           BIGINT PRIMARY KEY,
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     content      VARCHAR(255) NOT NULL,
     user_id      BIGINT,
     challenge_id BIGINT,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS challenge_comment
 
 CREATE TABLE IF NOT EXISTS challenge_vote
 (
-    id           BIGINT PRIMARY KEY,
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     is_upvote    BOOL NOT NULL,
     user_id      BIGINT,
     challenge_id BIGINT,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS challenge_vote
 
 CREATE TABLE IF NOT EXISTS challenge_submission
 (
-    id           BIGINT PRIMARY KEY,
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     code         VARCHAR(255) NOT NULL,
     user_id      BIGINT,
     challenge_id BIGINT,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS challenge_submission
 
 CREATE TABLE IF NOT EXISTS challenge_submission_comment
 (
-    id                      BIGINT PRIMARY KEY,
+    id                      BIGINT PRIMARY KEY AUTO_INCREMENT,
     content                 VARCHAR(255) NOT NULL,
     user_id                 BIGINT,
     challenge_submission_id BIGINT,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS challenge_submission_comment
 
 CREATE TABLE IF NOT EXISTS challenge_submission_vote
 (
-    id                      BIGINT PRIMARY KEY,
+    id                      BIGINT PRIMARY KEY AUTO_INCREMENT,
     is_upvote               BOOL NOT NULL,
     user_id                 BIGINT,
     challenge_submission_id BIGINT,
