@@ -47,7 +47,7 @@ public class ChallengeSubmissionResource {
         @Context SecurityContext ctx
     ) {
         Uni<User> existingUserRetrieval = userRepository
-            .asyncFindByName(ctx.getUserPrincipal().getName())
+            .findByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException(
@@ -103,7 +103,7 @@ public class ChallengeSubmissionResource {
                 );
 
                 Uni<Void> pointsAdditionTask =
-                    dbChallengeSubmissionCount < 1 ? userRepository.asyncAddPoints(
+                    dbChallengeSubmissionCount < 1 ? userRepository.addPointsByName(
                         existingDbUser,
                         pointsForTier(existingDbChallenge.getTier())
                     ) : Uni.createFrom().voidItem();

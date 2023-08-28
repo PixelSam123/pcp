@@ -47,7 +47,7 @@ public class ChallengeCommentResource {
         ChallengeCommentCreateDto challengeCommentToCreate, @Context SecurityContext ctx
     ) {
         Uni<User> existingUserRetrieval = userRepository
-            .asyncFindByName(ctx.getUserPrincipal().getName())
+            .findByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException(

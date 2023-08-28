@@ -38,7 +38,7 @@ public class ChallengeResource {
         ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx
     ) {
         Uni<Optional<User>> userRetrieval =
-            userRepository.asyncFindByName(ctx.getUserPrincipal().getName());
+            userRepository.findByName(ctx.getUserPrincipal().getName());
 
         Uni<Long> challengeCountRetrieval =
             challengeRepository.asyncCountByName(challengeToCreate.name());

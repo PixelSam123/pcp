@@ -23,14 +23,10 @@ public class SessionResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Session> sessionGet(@Context SecurityContext ctx) {
         return userRepository
-            .asyncFindByNameBrief(ctx.getUserPrincipal().getName())
+            .findByNameBrief(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
-                    throw new BadRequestException(Response
-                        .status(Response.Status.BAD_REQUEST)
-                        .header("WWW-Authenticate", "Bearer")
-                        .entity("Incorrect username")
-                        .build());
+                    throw new NotFoundException("Username of your session is not found");
                 }
 
                 return new Session(dbUser.get());
@@ -44,19 +40,17 @@ public class SessionResource {
     public Uni<Response> sessionLogout() {
         return Uni
             .createFrom()
-            .item(
-                () -> Response
-                    .ok()
-                    .cookie(
-                        new NewCookie.Builder("quarkus-credential")
-                            .value("")
-                            .path("/")
-                            .domain(null)
-                            .maxAge(0)
-                            .expiry(Date.from(Instant.EPOCH))
-                            .build()
-                    )
-                    .build()
-            );
+            .item(() -> Response
+                .ok()
+                .cookie(
+                    new NewCookie.Builder("quarkus-credential")
+                        .value("")
+                        .path("/")
+                        .domain(null)
+                        .maxAge(0)
+                        .expiry(Date.from(Instant.EPOCH))
+                        .build()
+                )
+                .build());
     }
 }

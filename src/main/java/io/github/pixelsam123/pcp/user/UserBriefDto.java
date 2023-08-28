@@ -5,7 +5,4 @@ public record UserBriefDto(
     String name,
     int points
 ) {
-    public UserBriefDto(User user) {
-        this(user.getId(), user.getName(), user.getPoints());
-    }
 }

@@ -50,7 +50,7 @@ public class ChallengeSubmissionVoteResource {
         @Context SecurityContext ctx
     ) {
         Uni<User> existingUserRetrieval = userRepository
-            .asyncFindByName(ctx.getUserPrincipal().getName())
+            .findByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException(
@@ -135,7 +135,7 @@ public class ChallengeSubmissionVoteResource {
     @ResponseStatus(RestResponse.StatusCode.NO_CONTENT)
     public Uni<Void> deleteSubmissionVote(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Optional<Long>> userIdRetrieval = userRepository
-            .asyncFindByName(ctx.getUserPrincipal().getName())
+            .findByName(ctx.getUserPrincipal().getName())
             .map(dbUser -> dbUser.map(User::getId));
 
         Uni<Optional<ChallengeSubmissionVote>> challengeSubmissionVoteRetrieval =

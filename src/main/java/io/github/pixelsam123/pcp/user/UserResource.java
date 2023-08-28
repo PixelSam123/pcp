@@ -26,50 +26,45 @@ public class UserResource {
     @Transactional
     public Uni<UserBriefDto> createUser(UserCreateDto userToCreate) {
         return userRepository
-            .asyncCountByName(userToCreate.name())
-            .map(Unchecked.function(dbUserCount -> {
+            .countByName(userToCreate.name())
+            .flatMap(Unchecked.function(dbUserCount -> {
                 if (dbUserCount > 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User already exists")
-                            .build()
-                    );
+                    throw new BadRequestException("User already exists");
                 }
 
-                return new User(
-                    userToCreate,
+                return userRepository.persist(
+                    userToCreate.name(),
                     BcryptUtil.bcryptHash(userToCreate.password())
                 );
             }))
-            .flatMap(
-                user -> userRepository.asyncPersist(user).map((unused) -> new UserBriefDto(user))
-            );
+            .flatMap(unused -> userRepository.findByNameBrief(userToCreate.name()))
+            .map(Unchecked.function(dbUser -> {
+                if (dbUser.isEmpty()) {
+                    throw new InternalServerErrorException(
+                        "Created user not found. Did creation fail?"
+                    );
+                }
+
+                return dbUser.get();
+            }));
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<UserBriefDto>> getUsers() {
-        return userRepository.asyncListAllBrief();
+        return userRepository.listAllBrief();
     }
 
     @GET
     @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<UserBriefDto> getUserByName(@PathParam("name") String name) {
-        return userRepository.asyncFindByNameBrief(name).map(
-            Unchecked.function(dbUser -> {
-                if (dbUser.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("User not found")
-                            .build()
-                    );
-                }
+        return userRepository.findByNameBrief(name).map(Unchecked.function(dbUser -> {
+            if (dbUser.isEmpty()) {
+                throw new NotFoundException("User not found");
+            }
 
-                return dbUser.get();
-            })
-        );
+            return dbUser.get();
+        }));
     }
 }
