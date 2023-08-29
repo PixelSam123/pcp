@@ -11,14 +11,4 @@ public record ChallengeDto(
     String description,
     String initialCode
 ) {
-    public ChallengeDto(Challenge challenge) {
-        this(challenge.getId(),
-            challenge.getName(),
-            challenge.getTier(),
-            challenge.getCompletedCount(),
-            new UserBriefDto(challenge.getUser()),
-            challenge.getDescription(),
-            challenge.getInitialCode()
-        );
-    }
 }

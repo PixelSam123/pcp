@@ -41,7 +41,7 @@ public class ChallengeResource {
             userRepository.findByName(ctx.getUserPrincipal().getName());
 
         Uni<Long> challengeCountRetrieval =
-            challengeRepository.asyncCountByName(challengeToCreate.name());
+            challengeRepository.countByName(challengeToCreate.name());
 
         return Uni
             .combine()
