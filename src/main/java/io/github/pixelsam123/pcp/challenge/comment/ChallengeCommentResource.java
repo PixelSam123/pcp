@@ -62,7 +62,7 @@ public class ChallengeCommentResource {
             }));
 
         Uni<Optional<Challenge>> challengeRetrieval =
-            challengeRepository.asyncFindById(challengeCommentToCreate.challengeId());
+            challengeRepository.findById(challengeCommentToCreate.challengeId());
 
         return Uni
             .combine()
@@ -98,7 +98,7 @@ public class ChallengeCommentResource {
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
-            .asyncFindByName(challengeName)
+            .findByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
                     throw new NotFoundException(

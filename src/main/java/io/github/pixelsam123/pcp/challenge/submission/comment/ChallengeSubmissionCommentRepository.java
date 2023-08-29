@@ -1,6 +1,5 @@
 package io.github.pixelsam123.pcp.challenge.submission.comment;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -8,7 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 @ApplicationScoped
-public class ChallengeSubmissionCommentRepository implements PanacheRepository<ChallengeSubmissionComment> {
+public class ChallengeSubmissionCommentRepository {
     public Uni<List<ChallengeSubmissionCommentDto>> asyncListByChallengeSubmissionId(Long challengeSubmissionId) {
         return Uni
             .createFrom()

@@ -7,11 +7,4 @@ public record ChallengeCommentDto(
     String content,
     UserBriefDto user
 ) {
-    public ChallengeCommentDto(ChallengeComment challengeComment) {
-        this(
-            challengeComment.getId(),
-            challengeComment.getContent(),
-            new UserBriefDto(challengeComment.getUser())
-        );
-    }
 }

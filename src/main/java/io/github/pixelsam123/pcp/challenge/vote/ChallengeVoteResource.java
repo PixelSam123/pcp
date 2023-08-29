@@ -61,7 +61,7 @@ public class ChallengeVoteResource {
             }));
 
         Uni<Optional<Challenge>> challengeRetrieval =
-            challengeRepository.asyncFindById(challengeVoteToCreate.challengeId());
+            challengeRepository.findById(challengeVoteToCreate.challengeId());
 
         Uni<Long> challengeVoteCountRetrieval = existingUserRetrieval.flatMap(
             existingDbUser -> challengeVoteRepository.asyncCountByChallengeIdAndUserId(
@@ -113,7 +113,7 @@ public class ChallengeVoteResource {
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
-            .asyncFindByName(challengeName)
+            .findByName(challengeName)
             .map(dbChallenge -> dbChallenge.map(Challenge::getId))
             .map(Unchecked.function(dbChallengeId -> {
                 if (dbChallengeId.isEmpty()) {

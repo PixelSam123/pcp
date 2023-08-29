@@ -9,7 +9,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -41,63 +40,55 @@ public class ChallengeResource {
             userRepository.findByName(ctx.getUserPrincipal().getName());
 
         Uni<Long> challengeCountRetrieval =
-            challengeRepository.asyncCountByName(challengeToCreate.name());
+            challengeRepository.countByName(challengeToCreate.name());
 
         return Uni
             .combine()
             .all()
             .unis(userRetrieval, challengeCountRetrieval)
-            .combinedWith(Unchecked.function((dbUser, dbChallengeCount) -> {
+            .asTuple()
+            .flatMap(Unchecked.function(tuple -> {
+                Optional<User> dbUser = tuple.getItem1();
+                long dbChallengeCount = tuple.getItem2();
+
                 if (dbUser.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
-                    );
+                    throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
                 if (dbChallengeCount > 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge Already Exists")
-                            .build()
+                    throw new BadRequestException("Challenge Already Exists");
+                }
+
+                return challengeRepository.persist(challengeToCreate, dbUser.get().id());
+            }))
+            .flatMap(unused -> challengeRepository.findByNameDto(challengeToCreate.name()))
+            .map(Unchecked.function(dbChallenge -> {
+                if (dbChallenge.isEmpty()) {
+                    throw new InternalServerErrorException(
+                        "Created challenge not found. Did creation fail?"
                     );
                 }
 
-                return new Challenge(challengeToCreate, dbUser.get());
-            }))
-            .flatMap(
-                challenge -> challengeRepository
-                    .asyncPersist(challenge)
-                    .map((unused) -> new ChallengeDto(challenge))
-            );
+                return dbChallenge.get();
+            }));
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<ChallengeBriefDto>> getChallenges() {
-        return challengeRepository.asyncListAllBrief();
+        return challengeRepository.listAllBrief();
     }
 
     @GET
     @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<ChallengeDto> getChallengeByName(@PathParam("name") String name) {
-        return challengeRepository
-            .asyncFindByNameDto(name)
-            .map(Unchecked.function(dbChallenge -> {
-                if (dbChallenge.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge not found")
-                            .build()
-                    );
-                }
+        return challengeRepository.findByNameDto(name).map(Unchecked.function(dbChallenge -> {
+            if (dbChallenge.isEmpty()) {
+                throw new NotFoundException("Challenge not found");
+            }
 
-                return dbChallenge.get();
-            }));
+            return dbChallenge.get();
+        }));
     }
 }

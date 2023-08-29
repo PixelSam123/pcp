@@ -62,7 +62,7 @@ public class ChallengeSubmissionResource {
             }));
 
         Uni<Challenge> existingChallengeRetrieval = challengeRepository
-            .asyncFindById(challengeSubmissionToCreate.challengeId())
+            .findById(challengeSubmissionToCreate.challengeId())
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
                     throw new BadRequestException(
@@ -109,7 +109,7 @@ public class ChallengeSubmissionResource {
                     ) : Uni.createFrom().voidItem();
 
                 Uni<Void> challengeCompletedCountAdditionTask =
-                    dbChallengeSubmissionCount < 1 ? challengeRepository.asyncAddCompletedCount(
+                    dbChallengeSubmissionCount < 1 ? challengeRepository.addCompletedCountById(
                         existingDbChallenge
                     ) : Uni.createFrom().voidItem();
 
@@ -133,7 +133,7 @@ public class ChallengeSubmissionResource {
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
-            .asyncFindByName(challengeName)
+            .findByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
                     throw new NotFoundException(

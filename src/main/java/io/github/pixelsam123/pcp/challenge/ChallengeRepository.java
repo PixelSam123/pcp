@@ -1,71 +1,279 @@
 package io.github.pixelsam123.pcp.challenge;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.github.pixelsam123.pcp.user.User;
+import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
+import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.InternalServerErrorException;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @ApplicationScoped
-public class ChallengeRepository implements PanacheRepository<Challenge> {
-    public Uni<Long> asyncCountByName(String name) {
+public class ChallengeRepository {
+    private final DataSource dataSource;
+
+    public ChallengeRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public Uni<Long> countByName(String name) {
+        Supplier<Long> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT COUNT(*) FROM challenge WHERE name = ?"
+                )
+            ) {
+                statement.setString(1, name);
+
+                ResultSet res = statement.executeQuery();
+                res.next();
+
+                return res.getLong(1);
+            }
+        });
+
         return Uni
             .createFrom()
-            .item(() -> count("name", name))
+            .item(dbOperation)
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<Challenge>> asyncFindById(Long id) {
+    public Uni<Optional<Challenge>> findById(long id) {
+        Supplier<Optional<Challenge>> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT * FROM challenge c JOIN user u on u.id = c.user_id WHERE c.id = ?"
+                )
+            ) {
+                statement.setLong(1, id);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(new Challenge(
+                    res.getLong("c.id"),
+                    res.getString("c.name"),
+                    res.getString("c.description"),
+                    res.getString("c.initial_code"),
+                    res.getString("c.test_case"),
+                    res.getInt("c.tier"),
+                    res.getInt("c.completed_count"),
+                    new User(
+                        res.getLong("u.id"),
+                        res.getString("u.name"),
+                        res.getString("u.password_hash"),
+                        res.getString("u.role"),
+                        res.getInt("u.points")
+                    )
+                ));
+            }
+        });
+
         return Uni
             .createFrom()
-            .item(() -> findByIdOptional(id))
+            .item(dbOperation)
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<Challenge>> asyncFindByName(String name) {
+    public Uni<Optional<Challenge>> findByName(String name) {
+        Supplier<Optional<Challenge>> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT * FROM challenge c JOIN user u on u.id = c.user_id WHERE c.name = ?"
+                )
+            ) {
+                statement.setString(1, name);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(new Challenge(
+                    res.getLong("c.id"),
+                    res.getString("c.name"),
+                    res.getString("c.description"),
+                    res.getString("c.initial_code"),
+                    res.getString("c.test_case"),
+                    res.getInt("c.tier"),
+                    res.getInt("c.completed_count"),
+                    new User(
+                        res.getLong("u.id"),
+                        res.getString("u.name"),
+                        res.getString("u.password_hash"),
+                        res.getString("u.role"),
+                        res.getInt("u.points")
+                    )
+                ));
+            }
+        });
+
         return Uni
             .createFrom()
-            .item(() -> find("name", name).firstResultOptional())
+            .item(dbOperation)
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<ChallengeDto>> asyncFindByNameDto(String name) {
+    public Uni<Optional<ChallengeDto>> findByNameDto(String name) {
+        Supplier<Optional<ChallengeDto>> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT "
+                        + "c.id, "
+                        + "c.name, "
+                        + "c.tier, "
+                        + "c.completed_count, "
+                        + "u.id, "
+                        + "u.name, "
+                        + "u.points, "
+                        + "c.description, "
+                        + "c.initial_code "
+                        + "FROM challenge c JOIN user u on u.id = c.user_id WHERE c.name = ?"
+                )
+            ) {
+                statement.setString(1, name);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(new ChallengeDto(
+                    res.getLong("c.id"),
+                    res.getString("c.name"),
+                    res.getInt("c.tier"),
+                    res.getInt("c.completed_count"),
+                    new UserBriefDto(
+                        res.getLong("u.id"),
+                        res.getString("u.name"),
+                        res.getInt("u.points")
+                    ),
+                    res.getString("c.description"),
+                    res.getString("c.initial_code")
+                ));
+            }
+        });
+
         return Uni
             .createFrom()
-            .item(() -> find("name", name).project(ChallengeDto.class).firstResultOptional())
+            .item(dbOperation)
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<List<ChallengeBriefDto>> asyncListAllBrief() {
+    public Uni<List<ChallengeBriefDto>> listAllBrief() {
+        Supplier<List<ChallengeBriefDto>> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT "
+                        + "c.id, "
+                        + "c.name, "
+                        + "c.tier, "
+                        + "c.completed_count, "
+                        + "u.id, "
+                        + "u.name, "
+                        + "u.points "
+                        + "FROM challenge c JOIN user u on u.id = c.user_id"
+                )
+            ) {
+                List<ChallengeBriefDto> list = new ArrayList<>();
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    list.add(new ChallengeBriefDto(
+                        res.getLong("c.id"),
+                        res.getString("c.name"),
+                        res.getInt("c.tier"),
+                        res.getInt("c.completed_count"),
+                        new UserBriefDto(
+                            res.getLong("u.id"),
+                            res.getString("u.name"),
+                            res.getInt("u.points")
+                        )
+                    ));
+                }
+
+                return list;
+            }
+        });
+
         return Uni
             .createFrom()
-            .item(() -> findAll().project(ChallengeBriefDto.class).list())
+            .item(dbOperation)
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Void> asyncAddCompletedCount(Challenge challenge) {
-        return Uni
-            .createFrom()
-            .item(() -> {
-                challenge.setCompletedCount(challenge.getCompletedCount() + 1);
+    public Uni<Void> addCompletedCountById(long id) {
+        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "UPDATE challenge SET completed_count = completed_count + 1 WHERE id = ?"
+                )
+            ) {
+                statement.setLong(1, id);
+
+                if (statement.executeUpdate() < 1) {
+                    throw new InternalServerErrorException(
+                        "Update error: updated row count is less than 1"
+                    );
+                }
 
                 return null;
-            })
-            .replaceWithVoid()
+            }
+        });
+
+        return Uni
+            .createFrom()
+            .item(dbOperation)
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Void> asyncPersist(Challenge challenge) {
-        return Uni
-            .createFrom()
-            .item(() -> {
-                persist(challenge);
+    public Uni<Void> persist(ChallengeCreateDto challenge, long userId) {
+        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "INSERT INTO challenge "
+                        + "(name, description, initial_code, test_case, tier, user_id) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)"
+                )
+            ) {
+                statement.setString(1, challenge.name());
+                statement.setString(2, challenge.description());
+                statement.setString(3, challenge.initialCode());
+                statement.setString(4, challenge.testCase());
+                statement.setInt(5, challenge.tier());
+                statement.setLong(6, userId);
+
+                if (statement.executeUpdate() < 1) {
+                    throw new InternalServerErrorException(
+                        "Insertion error: inserted row count is less than 1"
+                    );
+                }
 
                 return null;
-            })
-            .replaceWithVoid()
+            }
+        });
+
+        return Uni
+            .createFrom()
+            .item(dbOperation)
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 }
