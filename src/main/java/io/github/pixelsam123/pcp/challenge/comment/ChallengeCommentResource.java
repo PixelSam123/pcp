@@ -11,7 +11,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -43,23 +42,11 @@ public class ChallengeCommentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<ChallengeCommentDto> createChallengeComment(
+    public Uni<Void> createChallengeComment(
         ChallengeCommentCreateDto challengeCommentToCreate, @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = userRepository
-            .findByName(ctx.getUserPrincipal().getName())
-            .map(Unchecked.function(dbUser -> {
-                if (dbUser.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
-                    );
-                }
-
-                return dbUser.get();
-            }));
+        Uni<Optional<User>> userRetrieval =
+            userRepository.findByName(ctx.getUserPrincipal().getName());
 
         Uni<Optional<Challenge>> challengeRetrieval =
             challengeRepository.findById(challengeCommentToCreate.challengeId());
@@ -67,28 +54,22 @@ public class ChallengeCommentResource {
         return Uni
             .combine()
             .all()
-            .unis(existingUserRetrieval, challengeRetrieval)
-            .combinedWith(Unchecked.function((existingDbUser, dbChallenge) -> {
-                if (dbChallenge.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge doesn't exist")
-                            .build()
-                    );
+            .unis(userRetrieval, challengeRetrieval)
+            .asTuple()
+            .flatMap(Unchecked.function(tuple -> {
+                Optional<User> dbUser = tuple.getItem1();
+                Optional<Challenge> dbChallenge = tuple.getItem2();
+
+                if (dbUser.isEmpty()) {
+                    throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
-                return new ChallengeComment(
-                    challengeCommentToCreate,
-                    existingDbUser,
-                    dbChallenge.get()
-                );
-            }))
-            .flatMap(
-                challengeComment -> challengeCommentRepository
-                    .asyncPersist(challengeComment)
-                    .map((unused) -> new ChallengeCommentDto(challengeComment))
-            );
+                if (dbChallenge.isEmpty()) {
+                    throw new BadRequestException("Challenge doesn't exist");
+                }
+
+                return challengeCommentRepository.persist(challengeCommentToCreate, dbUser.get().id());
+            }));
     }
 
     @GET
@@ -101,17 +82,12 @@ public class ChallengeCommentResource {
             .findByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Not Found")
-                            .build()
-                    );
+                    throw new NotFoundException("Challenge Not Found");
                 }
 
-                return dbChallenge.get().getId();
+                return dbChallenge.get().id();
             }));
 
-        return challengeIdRetrieval.flatMap(challengeCommentRepository::asyncListByChallengeId);
+        return challengeIdRetrieval.flatMap(challengeCommentRepository::listByChallengeId);
     }
 }

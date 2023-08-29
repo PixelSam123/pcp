@@ -6,7 +6,6 @@ import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public class UserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<UserBriefDto> createUser(UserCreateDto userToCreate) {
+    public Uni<Void> createUser(UserCreateDto userToCreate) {
         return userRepository
             .countByName(userToCreate.name())
             .flatMap(Unchecked.function(dbUserCount -> {
@@ -36,16 +35,6 @@ public class UserResource {
                     userToCreate.name(),
                     BcryptUtil.bcryptHash(userToCreate.password())
                 );
-            }))
-            .flatMap(unused -> userRepository.findByNameBrief(userToCreate.name()))
-            .map(Unchecked.function(dbUser -> {
-                if (dbUser.isEmpty()) {
-                    throw new InternalServerErrorException(
-                        "Created user not found. Did creation fail?"
-                    );
-                }
-
-                return dbUser.get();
             }));
     }
 

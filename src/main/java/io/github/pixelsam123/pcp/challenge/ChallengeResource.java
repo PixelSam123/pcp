@@ -33,7 +33,7 @@ public class ChallengeResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<ChallengeDto> createChallenge(
+    public Uni<Void> createChallenge(
         ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx
     ) {
         Uni<Optional<User>> userRetrieval =
@@ -60,16 +60,6 @@ public class ChallengeResource {
                 }
 
                 return challengeRepository.persist(challengeToCreate, dbUser.get().id());
-            }))
-            .flatMap(unused -> challengeRepository.findByNameDto(challengeToCreate.name()))
-            .map(Unchecked.function(dbChallenge -> {
-                if (dbChallenge.isEmpty()) {
-                    throw new InternalServerErrorException(
-                        "Created challenge not found. Did creation fail?"
-                    );
-                }
-
-                return dbChallenge.get();
             }));
     }
 

@@ -7,11 +7,4 @@ public record ChallengeSubmissionDto(
     String code,
     UserBriefDto user
 ) {
-    public ChallengeSubmissionDto(ChallengeSubmission challengeSubmission) {
-        this(
-            challengeSubmission.getId(),
-            challengeSubmission.getCode(),
-            new UserBriefDto(challengeSubmission.getUser())
-        );
-    }
 }

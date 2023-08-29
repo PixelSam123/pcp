@@ -1,40 +1,12 @@
 package io.github.pixelsam123.pcp.challenge.submission;
 
 import io.github.pixelsam123.pcp.challenge.Challenge;
-import io.github.pixelsam123.pcp.challenge.submission.comment.ChallengeSubmissionComment;
-import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVote;
 import io.github.pixelsam123.pcp.user.User;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
-import java.util.List;
-
-@Entity
-@Getter
-@Setter
-public class ChallengeSubmission {
-    @Id
-    @GeneratedValue
-    private Long id;
-    @Column(nullable = false)
-    private String code;
-
-    @ManyToOne
-    private User user;
-    @ManyToOne
-    private Challenge challenge;
-
-    public ChallengeSubmission() {
-    }
-
-    public ChallengeSubmission(
-        ChallengeSubmissionCreateDto challengeSubmissionCreateDto,
-        User user,
-        Challenge challenge
-    ) {
-        this.code = challengeSubmissionCreateDto.code();
-        this.user = user;
-        this.challenge = challenge;
-    }
+public record ChallengeSubmission(
+    long id,
+    String code,
+    User user,
+    Challenge challenge
+) {
 }

@@ -53,7 +53,7 @@ public class ChallengeRepository {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT * FROM challenge c JOIN user u on u.id = c.user_id WHERE c.id = ?"
+                    "SELECT * FROM challenge c JOIN user u on c.user_id = u.id WHERE c.id = ?"
                 )
             ) {
                 statement.setLong(1, id);
@@ -93,7 +93,7 @@ public class ChallengeRepository {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT * FROM challenge c JOIN user u on u.id = c.user_id WHERE c.name = ?"
+                    "SELECT * FROM challenge c JOIN user u on c.user_id = u.id WHERE c.name = ?"
                 )
             ) {
                 statement.setString(1, name);
@@ -143,7 +143,7 @@ public class ChallengeRepository {
                         + "u.points, "
                         + "c.description, "
                         + "c.initial_code "
-                        + "FROM challenge c JOIN user u on u.id = c.user_id WHERE c.name = ?"
+                        + "FROM challenge c JOIN user u on c.user_id = u.id WHERE c.name = ?"
                 )
             ) {
                 statement.setString(1, name);
@@ -188,13 +188,13 @@ public class ChallengeRepository {
                         + "u.id, "
                         + "u.name, "
                         + "u.points "
-                        + "FROM challenge c JOIN user u on u.id = c.user_id"
+                        + "FROM challenge c JOIN user u on c.user_id = u.id"
                 )
             ) {
                 List<ChallengeBriefDto> list = new ArrayList<>();
 
                 ResultSet res = statement.executeQuery();
-                if (!res.next()) {
+                while (res.next()) {
                     list.add(new ChallengeBriefDto(
                         res.getLong("c.id"),
                         res.getString("c.name"),

@@ -7,11 +7,4 @@ public record ChallengeSubmissionVoteDto(
     boolean isUpvote,
     UserBriefDto user
 ) {
-    public ChallengeSubmissionVoteDto(ChallengeSubmissionVote challengeSubmissionVote) {
-        this(
-            challengeSubmissionVote.getId(),
-            challengeSubmissionVote.isUpvote(),
-            new UserBriefDto(challengeSubmissionVote.getUser())
-        );
-    }
 }

@@ -42,19 +42,14 @@ public class ChallengeVoteResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<ChallengeVoteDto> createChallengeVote(
+    public Uni<Void> createChallengeVote(
         ChallengeVoteCreateDto challengeVoteToCreate, @Context SecurityContext ctx
     ) {
         Uni<User> existingUserRetrieval = userRepository
             .findByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
-                    );
+                    throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
                 return dbUser.get();
@@ -64,8 +59,8 @@ public class ChallengeVoteResource {
             challengeRepository.findById(challengeVoteToCreate.challengeId());
 
         Uni<Long> challengeVoteCountRetrieval = existingUserRetrieval.flatMap(
-            existingDbUser -> challengeVoteRepository.asyncCountByChallengeIdAndUserId(
-                challengeVoteToCreate.challengeId(), existingDbUser.getId()
+            existingDbUser -> challengeVoteRepository.countByChallengeIdAndUserId(
+                challengeVoteToCreate.challengeId(), existingDbUser.id()
             )
         );
 
@@ -74,36 +69,21 @@ public class ChallengeVoteResource {
             .all()
             .unis(existingUserRetrieval, challengeRetrieval, challengeVoteCountRetrieval)
             .asTuple()
-            .map(Unchecked.function((tuple) -> {
+            .flatMap(Unchecked.function((tuple) -> {
                 User existingDbUser = tuple.getItem1();
                 Optional<Challenge> dbChallenge = tuple.getItem2();
                 long dbChallengeVoteCount = tuple.getItem3();
 
                 if (dbChallenge.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge doesn't exist")
-                            .build()
-                    );
+                    throw new BadRequestException("Challenge doesn't exist");
                 }
 
                 if (dbChallengeVoteCount > 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User already voted on this challenge")
-                            .build()
-                    );
+                    throw new BadRequestException("User already voted on this challenge");
                 }
 
-                return new ChallengeVote(challengeVoteToCreate, existingDbUser, dbChallenge.get());
-            }))
-            .flatMap(
-                challengeVote -> challengeVoteRepository
-                    .asyncPersist(challengeVote)
-                    .map((unused) -> new ChallengeVoteDto(challengeVote))
-            );
+                return challengeVoteRepository.persist(challengeVoteToCreate, existingDbUser.id());
+            }));
     }
 
     @GET
@@ -114,7 +94,7 @@ public class ChallengeVoteResource {
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findByName(challengeName)
-            .map(dbChallenge -> dbChallenge.map(Challenge::getId))
+            .map(dbChallenge -> dbChallenge.map(Challenge::id))
             .map(Unchecked.function(dbChallengeId -> {
                 if (dbChallengeId.isEmpty()) {
                     throw new NotFoundException(
@@ -128,7 +108,7 @@ public class ChallengeVoteResource {
                 return dbChallengeId.get();
             }));
 
-        return challengeIdRetrieval.flatMap(challengeVoteRepository::asyncListByChallengeId);
+        return challengeIdRetrieval.flatMap(challengeVoteRepository::listByChallengeId);
     }
 
     @DELETE
@@ -138,61 +118,35 @@ public class ChallengeVoteResource {
     public Uni<Void> deleteChallengeVote(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Optional<Long>> userIdRetrieval = userRepository
             .findByName(ctx.getUserPrincipal().getName())
-            .map(dbUser -> dbUser.map(User::getId));
+            .map(dbUser -> dbUser.map(User::id));
 
-        Uni<Optional<ChallengeVote>> challengeVoteRetrieval =
-            challengeVoteRepository.asyncFindById(id);
+        Uni<Optional<ChallengeVote>> challengeVoteRetrieval = challengeVoteRepository.findById(id);
 
         return Uni
             .combine()
             .all()
             .unis(userIdRetrieval, challengeVoteRetrieval)
-            .combinedWith(Unchecked.function((dbUserId, dbChallengeVote) -> {
+            .asTuple()
+            .flatMap(Unchecked.function(tuple -> {
+                Optional<Long> dbUserId = tuple.getItem1();
+                Optional<ChallengeVote> dbChallengeVote = tuple.getItem2();
+
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
-                    );
+                    throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
                 if (dbChallengeVote.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Vote Not Found")
-                            .build()
-                    );
+                    throw new NotFoundException("Challenge Vote Not Found");
                 }
 
                 Long existingDbUserId = dbUserId.get();
                 ChallengeVote existingDbChallengeVote = dbChallengeVote.get();
 
-                if (!existingDbUserId.equals(existingDbChallengeVote.getUser().getId())) {
-                    throw new ForbiddenException(
-                        Response
-                            .status(Response.Status.FORBIDDEN)
-                            .entity("Not allowed to delete on another user's behalf")
-                            .build()
-                    );
+                if (!existingDbUserId.equals(existingDbChallengeVote.user().id())) {
+                    throw new ForbiddenException("Not allowed to delete on another user's behalf");
                 }
 
-                return null;
-            }))
-            .flatMap(unused -> challengeVoteRepository
-                .asyncDeleteById(id)
-                .map(Unchecked.function((Boolean isDeleted) -> {
-                    if (!isDeleted) {
-                        throw new InternalServerErrorException(
-                            Response
-                                .status(Response.Status.INTERNAL_SERVER_ERROR)
-                                .entity("Failed to delete challenge vote")
-                                .build()
-                        );
-                    }
-
-                    return null;
-                })));
+                return challengeVoteRepository.deleteById(id);
+            }));
     }
 }

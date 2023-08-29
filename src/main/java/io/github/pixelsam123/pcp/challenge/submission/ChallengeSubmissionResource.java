@@ -11,7 +11,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -42,7 +41,7 @@ public class ChallengeSubmissionResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<ChallengeSubmissionDto> createChallengeSubmission(
+    public Uni<Void> createChallengeSubmission(
         ChallengeSubmissionCreateDto challengeSubmissionToCreate,
         @Context SecurityContext ctx
     ) {
@@ -50,12 +49,7 @@ public class ChallengeSubmissionResource {
             .findByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
-                    );
+                    throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
                 return dbUser.get();
@@ -65,20 +59,15 @@ public class ChallengeSubmissionResource {
             .findById(challengeSubmissionToCreate.challengeId())
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge doesn't exist")
-                            .build()
-                    );
+                    throw new BadRequestException("Challenge doesn't exist");
                 }
 
                 return dbChallenge.get();
             }));
 
         Uni<Long> challengeSubmissionCountRetrieval = existingUserRetrieval.flatMap(
-            existingDbUser -> challengeSubmissionRepository.asyncCountByChallengeIdAndUserId(
-                challengeSubmissionToCreate.challengeId(), existingDbUser.getId()
+            existingDbUser -> challengeSubmissionRepository.countByChallengeIdAndUserId(
+                challengeSubmissionToCreate.challengeId(), existingDbUser.id()
             )
         );
 
@@ -96,34 +85,31 @@ public class ChallengeSubmissionResource {
                 Challenge existingDbChallenge = tuple.getItem2();
                 long dbChallengeSubmissionCount = tuple.getItem3();
 
-                ChallengeSubmission challengeSubmission = new ChallengeSubmission(
-                    challengeSubmissionToCreate,
-                    existingDbUser,
-                    existingDbChallenge
-                );
-
                 Uni<Void> pointsAdditionTask =
                     dbChallengeSubmissionCount < 1 ? userRepository.addPointsByName(
-                        existingDbUser,
-                        pointsForTier(existingDbChallenge.getTier())
+                        existingDbUser.name(),
+                        pointsForTier(existingDbChallenge.tier())
                     ) : Uni.createFrom().voidItem();
 
                 Uni<Void> challengeCompletedCountAdditionTask =
                     dbChallengeSubmissionCount < 1 ? challengeRepository.addCompletedCountById(
-                        existingDbChallenge
+                        existingDbChallenge.id()
                     ) : Uni.createFrom().voidItem();
 
                 return Uni
                     .combine()
                     .all()
                     .unis(
-                        challengeSubmissionRepository.asyncPersist(challengeSubmission),
+                        challengeSubmissionRepository.persist(
+                            challengeSubmissionToCreate,
+                            existingDbUser.id()
+                        ),
                         pointsAdditionTask,
                         challengeCompletedCountAdditionTask
                     )
-                    .asTuple()
-                    .map(unused -> new ChallengeSubmissionDto(challengeSubmission));
-            }));
+                    .asTuple();
+            }))
+            .replaceWithVoid();
     }
 
     @GET
@@ -136,18 +122,13 @@ public class ChallengeSubmissionResource {
             .findByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Not Found")
-                            .build()
-                    );
+                    throw new NotFoundException("Challenge Not Found");
                 }
 
-                return dbChallenge.get().getId();
+                return dbChallenge.get().id();
             }));
 
-        return challengeIdRetrieval.flatMap(challengeSubmissionRepository::asyncListByChallengeId);
+        return challengeIdRetrieval.flatMap(challengeSubmissionRepository::listByChallengeId);
     }
 
     private int pointsForTier(int tier) {

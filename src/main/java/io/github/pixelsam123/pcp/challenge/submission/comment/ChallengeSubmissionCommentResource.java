@@ -11,7 +11,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -43,53 +42,38 @@ public class ChallengeSubmissionCommentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<ChallengeSubmissionCommentDto> createChallengeSubmissionComment(
+    public Uni<Void> createChallengeSubmissionComment(
         ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = userRepository
-            .findByName(ctx.getUserPrincipal().getName())
-            .map(Unchecked.function(dbUser -> {
-                if (dbUser.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
-                    );
-                }
-
-                return dbUser.get();
-            }));
+        Uni<Optional<User>> userRetrieval =
+            userRepository.findByName(ctx.getUserPrincipal().getName());
 
         Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval =
-            challengeSubmissionRepository.asyncFindById(challengeSubmissionCommentToCreate.submissionId());
+            challengeSubmissionRepository.findById(challengeSubmissionCommentToCreate.submissionId());
 
         return Uni
             .combine()
             .all()
-            .unis(existingUserRetrieval, challengeSubmissionRetrieval)
-            .combinedWith(Unchecked.function((existingDbUser, dbChallengeSubmission) -> {
-                if (dbChallengeSubmission.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge submission doesn't exist")
-                            .build()
-                    );
+            .unis(userRetrieval, challengeSubmissionRetrieval)
+            .asTuple()
+            .flatMap(Unchecked.function(tuple -> {
+                Optional<User> dbUser = tuple.getItem1();
+                Optional<ChallengeSubmission> dbChallengeSubmission = tuple.getItem2();
+
+                if (dbUser.isEmpty()) {
+                    throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
-                return new ChallengeSubmissionComment(
+                if (dbChallengeSubmission.isEmpty()) {
+                    throw new BadRequestException("Challenge submission doesn't exist");
+                }
+
+                return challengeSubmissionCommentRepository.persist(
                     challengeSubmissionCommentToCreate,
-                    existingDbUser,
-                    dbChallengeSubmission.get()
+                    dbUser.get().id()
                 );
-            }))
-            .flatMap(
-                challengeSubmissionComment -> challengeSubmissionCommentRepository
-                    .asyncPersist(challengeSubmissionComment)
-                    .map((unused) -> new ChallengeSubmissionCommentDto(challengeSubmissionComment))
-            );
+            }));
     }
 
     @GET
@@ -99,6 +83,6 @@ public class ChallengeSubmissionCommentResource {
         @PathParam("challenge_submission_id") long challengeSubmissionId
     ) {
         return challengeSubmissionCommentRepository
-            .asyncListByChallengeSubmissionId(challengeSubmissionId);
+            .listByChallengeSubmissionId(challengeSubmissionId);
     }
 }
