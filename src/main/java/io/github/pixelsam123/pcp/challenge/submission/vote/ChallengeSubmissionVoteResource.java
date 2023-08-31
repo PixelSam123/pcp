@@ -2,7 +2,6 @@ package io.github.pixelsam123.pcp.challenge.submission.vote;
 
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmission;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -48,8 +47,8 @@ public class ChallengeSubmissionVoteResource {
         ChallengeSubmissionVoteCreateDto challengeSubmissionVoteToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = userRepository
-            .findByName(ctx.getUserPrincipal().getName())
+        Uni<Long> existingUserIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
@@ -61,11 +60,11 @@ public class ChallengeSubmissionVoteResource {
         Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval =
             challengeSubmissionRepository.findById(challengeSubmissionVoteToCreate.submissionId());
 
-        Uni<Long> challengeSubmissionVoteCountRetrieval = existingUserRetrieval.flatMap(
-            existingDbUser -> challengeSubmissionVoteRepository
+        Uni<Long> challengeSubmissionVoteCountRetrieval = existingUserIdRetrieval.flatMap(
+            existingDbUserId -> challengeSubmissionVoteRepository
                 .countByChallengeSubmissionIdAndUserId(
                     challengeSubmissionVoteToCreate.submissionId(),
-                    existingDbUser.id()
+                    existingDbUserId
                 )
         );
 
@@ -73,13 +72,13 @@ public class ChallengeSubmissionVoteResource {
             .combine()
             .all()
             .unis(
-                existingUserRetrieval,
+                existingUserIdRetrieval,
                 challengeSubmissionRetrieval,
                 challengeSubmissionVoteCountRetrieval
             )
             .asTuple()
             .flatMap(Unchecked.function((tuple) -> {
-                User existingDbUser = tuple.getItem1();
+                long existingDbUserId = tuple.getItem1();
                 Optional<ChallengeSubmission> dbChallengeSubmission = tuple.getItem2();
                 long dbChallengeSubmissionVoteCount = tuple.getItem3();
 
@@ -93,7 +92,7 @@ public class ChallengeSubmissionVoteResource {
 
                 return challengeSubmissionVoteRepository.persist(
                     challengeSubmissionVoteToCreate,
-                    existingDbUser.id()
+                    existingDbUserId
                 );
             }));
     }
@@ -113,8 +112,7 @@ public class ChallengeSubmissionVoteResource {
     @ResponseStatus(RestResponse.StatusCode.NO_CONTENT)
     public Uni<Void> deleteSubmissionVote(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Optional<Long>> userIdRetrieval = userRepository
-            .findByName(ctx.getUserPrincipal().getName())
-            .map(dbUser -> dbUser.map(User::id));
+            .findIdByName(ctx.getUserPrincipal().getName());
 
         Uni<Optional<ChallengeSubmissionVote>> challengeSubmissionVoteRetrieval =
             challengeSubmissionVoteRepository.findById(id);

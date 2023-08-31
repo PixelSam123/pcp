@@ -2,7 +2,6 @@ package io.github.pixelsam123.pcp.challenge.submission.comment;
 
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmission;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -46,8 +45,8 @@ public class ChallengeSubmissionCommentResource {
         ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<Optional<User>> userRetrieval =
-            userRepository.findByName(ctx.getUserPrincipal().getName());
+        Uni<Optional<Long>> userIdRetrieval =
+            userRepository.findIdByName(ctx.getUserPrincipal().getName());
 
         Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval =
             challengeSubmissionRepository.findById(challengeSubmissionCommentToCreate.submissionId());
@@ -55,13 +54,13 @@ public class ChallengeSubmissionCommentResource {
         return Uni
             .combine()
             .all()
-            .unis(userRetrieval, challengeSubmissionRetrieval)
+            .unis(userIdRetrieval, challengeSubmissionRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<User> dbUser = tuple.getItem1();
+                Optional<Long> dbUserId = tuple.getItem1();
                 Optional<ChallengeSubmission> dbChallengeSubmission = tuple.getItem2();
 
-                if (dbUser.isEmpty()) {
+                if (dbUserId.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
@@ -71,7 +70,7 @@ public class ChallengeSubmissionCommentResource {
 
                 return challengeSubmissionCommentRepository.persist(
                     challengeSubmissionCommentToCreate,
-                    dbUser.get().id()
+                    dbUserId.get()
                 );
             }));
     }

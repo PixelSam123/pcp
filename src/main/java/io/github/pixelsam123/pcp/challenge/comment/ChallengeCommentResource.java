@@ -1,8 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.comment;
 
-import io.github.pixelsam123.pcp.challenge.Challenge;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -45,30 +43,30 @@ public class ChallengeCommentResource {
     public Uni<Void> createChallengeComment(
         ChallengeCommentCreateDto challengeCommentToCreate, @Context SecurityContext ctx
     ) {
-        Uni<Optional<User>> userRetrieval =
-            userRepository.findByName(ctx.getUserPrincipal().getName());
+        Uni<Optional<Long>> dbUserIdRetrieval =
+            userRepository.findIdByName(ctx.getUserPrincipal().getName());
 
-        Uni<Optional<Challenge>> challengeRetrieval =
-            challengeRepository.findById(challengeCommentToCreate.challengeId());
+        Uni<Long> challengeCountRetrieval =
+            challengeRepository.countById(challengeCommentToCreate.challengeId());
 
         return Uni
             .combine()
             .all()
-            .unis(userRetrieval, challengeRetrieval)
+            .unis(dbUserIdRetrieval, challengeCountRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<User> dbUser = tuple.getItem1();
-                Optional<Challenge> dbChallenge = tuple.getItem2();
+                Optional<Long> dbUserId = tuple.getItem1();
+                long dbChallengeCount = tuple.getItem2();
 
-                if (dbUser.isEmpty()) {
+                if (dbUserId.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
-                if (dbChallenge.isEmpty()) {
+                if (dbChallengeCount == 0) {
                     throw new BadRequestException("Challenge doesn't exist");
                 }
 
-                return challengeCommentRepository.persist(challengeCommentToCreate, dbUser.get().id());
+                return challengeCommentRepository.persist(challengeCommentToCreate, dbUserId.get());
             }));
     }
 
@@ -79,13 +77,13 @@ public class ChallengeCommentResource {
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
-            .findByName(challengeName)
+            .findIdByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
                     throw new NotFoundException("Challenge Not Found");
                 }
 
-                return dbChallenge.get().id();
+                return dbChallenge.get();
             }));
 
         return challengeIdRetrieval.flatMap(challengeCommentRepository::listByChallengeId);

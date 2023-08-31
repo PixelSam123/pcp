@@ -42,15 +42,13 @@ public class SessionResource {
             .createFrom()
             .item(() -> Response
                 .ok()
-                .cookie(
-                    new NewCookie.Builder("quarkus-credential")
-                        .value("")
-                        .path("/")
-                        .domain(null)
-                        .maxAge(0)
-                        .expiry(Date.from(Instant.EPOCH))
-                        .build()
-                )
+                .cookie(new NewCookie.Builder("quarkus-credential")
+                    .value("")
+                    .path("/")
+                    .domain(null)
+                    .maxAge(0)
+                    .expiry(Date.from(Instant.EPOCH))
+                    .build())
                 .build());
     }
 }

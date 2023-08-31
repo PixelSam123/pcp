@@ -1,8 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.vote;
 
-import io.github.pixelsam123.pcp.challenge.Challenge;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -45,8 +43,8 @@ public class ChallengeVoteResource {
     public Uni<Void> createChallengeVote(
         ChallengeVoteCreateDto challengeVoteToCreate, @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = userRepository
-            .findByName(ctx.getUserPrincipal().getName())
+        Uni<Long> existingUserIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
@@ -55,26 +53,26 @@ public class ChallengeVoteResource {
                 return dbUser.get();
             }));
 
-        Uni<Optional<Challenge>> challengeRetrieval =
-            challengeRepository.findById(challengeVoteToCreate.challengeId());
+        Uni<Long> challengeCountRetrieval =
+            challengeRepository.countById(challengeVoteToCreate.challengeId());
 
-        Uni<Long> challengeVoteCountRetrieval = existingUserRetrieval.flatMap(
-            existingDbUser -> challengeVoteRepository.countByChallengeIdAndUserId(
-                challengeVoteToCreate.challengeId(), existingDbUser.id()
+        Uni<Long> challengeVoteCountRetrieval = existingUserIdRetrieval.flatMap(
+            existingDbUserId -> challengeVoteRepository.countByChallengeIdAndUserId(
+                challengeVoteToCreate.challengeId(), existingDbUserId
             )
         );
 
         return Uni
             .combine()
             .all()
-            .unis(existingUserRetrieval, challengeRetrieval, challengeVoteCountRetrieval)
+            .unis(existingUserIdRetrieval, challengeCountRetrieval, challengeVoteCountRetrieval)
             .asTuple()
             .flatMap(Unchecked.function((tuple) -> {
-                User existingDbUser = tuple.getItem1();
-                Optional<Challenge> dbChallenge = tuple.getItem2();
+                long existingDbUserId = tuple.getItem1();
+                long dbChallengeCount = tuple.getItem2();
                 long dbChallengeVoteCount = tuple.getItem3();
 
-                if (dbChallenge.isEmpty()) {
+                if (dbChallengeCount == 0) {
                     throw new BadRequestException("Challenge doesn't exist");
                 }
 
@@ -82,7 +80,7 @@ public class ChallengeVoteResource {
                     throw new BadRequestException("User already voted on this challenge");
                 }
 
-                return challengeVoteRepository.persist(challengeVoteToCreate, existingDbUser.id());
+                return challengeVoteRepository.persist(challengeVoteToCreate, existingDbUserId);
             }));
     }
 
@@ -93,8 +91,7 @@ public class ChallengeVoteResource {
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
-            .findByName(challengeName)
-            .map(dbChallenge -> dbChallenge.map(Challenge::id))
+            .findIdByName(challengeName)
             .map(Unchecked.function(dbChallengeId -> {
                 if (dbChallengeId.isEmpty()) {
                     throw new NotFoundException(
@@ -117,8 +114,7 @@ public class ChallengeVoteResource {
     @ResponseStatus(RestResponse.StatusCode.NO_CONTENT)
     public Uni<Void> deleteChallengeVote(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Optional<Long>> userIdRetrieval = userRepository
-            .findByName(ctx.getUserPrincipal().getName())
-            .map(dbUser -> dbUser.map(User::id));
+            .findIdByName(ctx.getUserPrincipal().getName());
 
         Uni<Optional<ChallengeVote>> challengeVoteRetrieval = challengeVoteRepository.findById(id);
 

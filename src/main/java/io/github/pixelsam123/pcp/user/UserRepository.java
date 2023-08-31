@@ -46,12 +46,12 @@ public class UserRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<User>> findByName(String name) {
-        Supplier<Optional<User>> dbOperation = Unchecked.supplier(() -> {
+    public Uni<Optional<Long>> findIdByName(String name) {
+        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT * FROM user WHERE name = ?"
+                    "SELECT id FROM user WHERE name = ?"
                 )
             ) {
                 statement.setString(1, name);
@@ -61,13 +61,7 @@ public class UserRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(new User(
-                    res.getLong("id"),
-                    res.getString("name"),
-                    res.getString("password_hash"),
-                    res.getString("role"),
-                    res.getInt("points")
-                ));
+                return Optional.of(res.getLong("id"));
             }
         });
 
@@ -135,16 +129,16 @@ public class UserRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Void> addPointsByName(String name, int points) {
+    public Uni<Void> addPointsById(long id, int points) {
         Supplier<Void> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "UPDATE user SET points = points + ? WHERE name = ?"
+                    "UPDATE user SET points = points + ? WHERE id = ?"
                 )
             ) {
                 statement.setInt(1, points);
-                statement.setString(2, name);
+                statement.setLong(2, id);
 
                 if (statement.executeUpdate() < 1) {
                     throw new InternalServerErrorException(

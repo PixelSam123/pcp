@@ -1,6 +1,5 @@
 package io.github.pixelsam123.pcp.challenge;
 
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -36,8 +35,8 @@ public class ChallengeResource {
     public Uni<Void> createChallenge(
         ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx
     ) {
-        Uni<Optional<User>> userRetrieval =
-            userRepository.findByName(ctx.getUserPrincipal().getName());
+        Uni<Optional<Long>> userIdRetrieval =
+            userRepository.findIdByName(ctx.getUserPrincipal().getName());
 
         Uni<Long> challengeCountRetrieval =
             challengeRepository.countByName(challengeToCreate.name());
@@ -45,13 +44,13 @@ public class ChallengeResource {
         return Uni
             .combine()
             .all()
-            .unis(userRetrieval, challengeCountRetrieval)
+            .unis(userIdRetrieval, challengeCountRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<User> dbUser = tuple.getItem1();
+                Optional<Long> dbUserId = tuple.getItem1();
                 long dbChallengeCount = tuple.getItem2();
 
-                if (dbUser.isEmpty()) {
+                if (dbUserId.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
@@ -59,7 +58,7 @@ public class ChallengeResource {
                     throw new BadRequestException("Challenge Already Exists");
                 }
 
-                return challengeRepository.persist(challengeToCreate, dbUser.get().id());
+                return challengeRepository.persist(challengeToCreate, dbUserId.get());
             }));
     }
 

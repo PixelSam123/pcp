@@ -1,8 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.submission;
 
-import io.github.pixelsam123.pcp.challenge.Challenge;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -15,6 +13,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
+import java.util.Optional;
 
 @Tag(
     name = "challenge_submissions",
@@ -45,8 +44,8 @@ public class ChallengeSubmissionResource {
         ChallengeSubmissionCreateDto challengeSubmissionToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<User> existingUserRetrieval = userRepository
-            .findByName(ctx.getUserPrincipal().getName())
+        Uni<Long> existingUserIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
@@ -55,19 +54,12 @@ public class ChallengeSubmissionResource {
                 return dbUser.get();
             }));
 
-        Uni<Challenge> existingChallengeRetrieval = challengeRepository
-            .findById(challengeSubmissionToCreate.challengeId())
-            .map(Unchecked.function(dbChallenge -> {
-                if (dbChallenge.isEmpty()) {
-                    throw new BadRequestException("Challenge doesn't exist");
-                }
+        Uni<Optional<Integer>> challengeTierRetrieval =
+            challengeRepository.findTierById(challengeSubmissionToCreate.challengeId());
 
-                return dbChallenge.get();
-            }));
-
-        Uni<Long> challengeSubmissionCountRetrieval = existingUserRetrieval.flatMap(
-            existingDbUser -> challengeSubmissionRepository.countByChallengeIdAndUserId(
-                challengeSubmissionToCreate.challengeId(), existingDbUser.id()
+        Uni<Long> challengeSubmissionCountRetrieval = existingUserIdRetrieval.flatMap(
+            existingDbUserId -> challengeSubmissionRepository.countByChallengeIdAndUserId(
+                challengeSubmissionToCreate.challengeId(), existingDbUserId
             )
         );
 
@@ -75,25 +67,29 @@ public class ChallengeSubmissionResource {
             .combine()
             .all()
             .unis(
-                existingUserRetrieval,
-                existingChallengeRetrieval,
+                existingUserIdRetrieval,
+                challengeTierRetrieval,
                 challengeSubmissionCountRetrieval
             )
             .asTuple()
             .flatMap(Unchecked.function((tuple) -> {
-                User existingDbUser = tuple.getItem1();
-                Challenge existingDbChallenge = tuple.getItem2();
+                long existingDbUserId = tuple.getItem1();
+                Optional<Integer> dbChallengeTier = tuple.getItem2();
                 long dbChallengeSubmissionCount = tuple.getItem3();
 
+                if (dbChallengeTier.isEmpty()) {
+                    throw new BadRequestException("Challenge doesn't exist");
+                }
+
                 Uni<Void> pointsAdditionTask =
-                    dbChallengeSubmissionCount < 1 ? userRepository.addPointsByName(
-                        existingDbUser.name(),
-                        pointsForTier(existingDbChallenge.tier())
+                    dbChallengeSubmissionCount < 1 ? userRepository.addPointsById(
+                        existingDbUserId,
+                        pointsForTier(dbChallengeTier.get())
                     ) : Uni.createFrom().voidItem();
 
                 Uni<Void> challengeCompletedCountAdditionTask =
                     dbChallengeSubmissionCount < 1 ? challengeRepository.addCompletedCountById(
-                        existingDbChallenge.id()
+                        challengeSubmissionToCreate.challengeId()
                     ) : Uni.createFrom().voidItem();
 
                 return Uni
@@ -102,7 +98,7 @@ public class ChallengeSubmissionResource {
                     .unis(
                         challengeSubmissionRepository.persist(
                             challengeSubmissionToCreate,
-                            existingDbUser.id()
+                            existingDbUserId
                         ),
                         pointsAdditionTask,
                         challengeCompletedCountAdditionTask
@@ -119,13 +115,13 @@ public class ChallengeSubmissionResource {
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
-            .findByName(challengeName)
+            .findIdByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
                     throw new NotFoundException("Challenge Not Found");
                 }
 
-                return dbChallenge.get().id();
+                return dbChallenge.get();
             }));
 
         return challengeIdRetrieval.flatMap(challengeSubmissionRepository::listByChallengeId);

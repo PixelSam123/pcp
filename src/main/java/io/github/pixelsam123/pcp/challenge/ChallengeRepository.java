@@ -1,6 +1,5 @@
 package io.github.pixelsam123.pcp.challenge;
 
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -48,37 +47,20 @@ public class ChallengeRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<Challenge>> findById(long id) {
-        Supplier<Optional<Challenge>> dbOperation = Unchecked.supplier(() -> {
+    public Uni<Long> countById(long id) {
+        Supplier<Long> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT * FROM challenge c JOIN user u on c.user_id = u.id WHERE c.id = ?"
+                    "SELECT COUNT(*) FROM challenge WHERE id = ?"
                 )
             ) {
                 statement.setLong(1, id);
 
                 ResultSet res = statement.executeQuery();
-                if (!res.next()) {
-                    return Optional.empty();
-                }
+                res.next();
 
-                return Optional.of(new Challenge(
-                    res.getLong("c.id"),
-                    res.getString("c.name"),
-                    res.getString("c.description"),
-                    res.getString("c.initial_code"),
-                    res.getString("c.test_case"),
-                    res.getInt("c.tier"),
-                    res.getInt("c.completed_count"),
-                    new User(
-                        res.getLong("u.id"),
-                        res.getString("u.name"),
-                        res.getString("u.password_hash"),
-                        res.getString("u.role"),
-                        res.getInt("u.points")
-                    )
-                ));
+                return res.getLong(1);
             }
         });
 
@@ -88,12 +70,37 @@ public class ChallengeRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<Challenge>> findByName(String name) {
-        Supplier<Optional<Challenge>> dbOperation = Unchecked.supplier(() -> {
+    public Uni<Optional<Integer>> findTierById(long id) {
+        Supplier<Optional<Integer>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT * FROM challenge c JOIN user u on c.user_id = u.id WHERE c.name = ?"
+                    "SELECT tier FROM challenge WHERE id = ?"
+                )
+            ) {
+                statement.setLong(1, id);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(res.getInt("tier"));
+            }
+        });
+
+        return Uni
+            .createFrom()
+            .item(dbOperation)
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    }
+
+    public Uni<Optional<Long>> findIdByName(String name) {
+        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT id FROM challenge WHERE name = ?"
                 )
             ) {
                 statement.setString(1, name);
@@ -103,22 +110,7 @@ public class ChallengeRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(new Challenge(
-                    res.getLong("c.id"),
-                    res.getString("c.name"),
-                    res.getString("c.description"),
-                    res.getString("c.initial_code"),
-                    res.getString("c.test_case"),
-                    res.getInt("c.tier"),
-                    res.getInt("c.completed_count"),
-                    new User(
-                        res.getLong("u.id"),
-                        res.getString("u.name"),
-                        res.getString("u.password_hash"),
-                        res.getString("u.role"),
-                        res.getInt("u.points")
-                    )
-                ));
+                return Optional.of(res.getLong("id"));
             }
         });
 
