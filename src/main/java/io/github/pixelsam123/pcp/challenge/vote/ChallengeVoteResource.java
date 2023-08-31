@@ -9,7 +9,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.ResponseStatus;
@@ -94,12 +93,7 @@ public class ChallengeVoteResource {
             .findIdByName(challengeName)
             .map(Unchecked.function(dbChallengeId -> {
                 if (dbChallengeId.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Not Found")
-                            .build()
-                    );
+                    throw new NotFoundException("Challenge Not Found");
                 }
 
                 return dbChallengeId.get();
@@ -113,32 +107,30 @@ public class ChallengeVoteResource {
     @Path("/{id}")
     @ResponseStatus(RestResponse.StatusCode.NO_CONTENT)
     public Uni<Void> deleteChallengeVote(@PathParam("id") long id, @Context SecurityContext ctx) {
-        Uni<Optional<Long>> userIdRetrieval = userRepository
-            .findIdByName(ctx.getUserPrincipal().getName());
+        Uni<Optional<Long>> userIdRetrieval =
+            userRepository.findIdByName(ctx.getUserPrincipal().getName());
 
-        Uni<Optional<ChallengeVote>> challengeVoteRetrieval = challengeVoteRepository.findById(id);
+        Uni<Optional<Long>> challengeVoteUserIdRetrieval =
+            challengeVoteRepository.findUserIdById(id);
 
         return Uni
             .combine()
             .all()
-            .unis(userIdRetrieval, challengeVoteRetrieval)
+            .unis(userIdRetrieval, challengeVoteUserIdRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
                 Optional<Long> dbUserId = tuple.getItem1();
-                Optional<ChallengeVote> dbChallengeVote = tuple.getItem2();
+                Optional<Long> dbChallengeVoteUserId = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
-                if (dbChallengeVote.isEmpty()) {
+                if (dbChallengeVoteUserId.isEmpty()) {
                     throw new NotFoundException("Challenge Vote Not Found");
                 }
 
-                Long existingDbUserId = dbUserId.get();
-                ChallengeVote existingDbChallengeVote = dbChallengeVote.get();
-
-                if (!existingDbUserId.equals(existingDbChallengeVote.user().id())) {
+                if (!dbUserId.get().equals(dbChallengeVoteUserId.get())) {
                     throw new ForbiddenException("Not allowed to delete on another user's behalf");
                 }
 

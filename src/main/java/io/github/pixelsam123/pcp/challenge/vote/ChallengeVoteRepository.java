@@ -1,7 +1,5 @@
 package io.github.pixelsam123.pcp.challenge.vote;
 
-import io.github.pixelsam123.pcp.challenge.Challenge;
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -50,16 +48,12 @@ public class ChallengeVoteRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<ChallengeVote>> findById(long id) {
-        Supplier<Optional<ChallengeVote>> dbOperation = Unchecked.supplier(() -> {
+    public Uni<Optional<Long>> findUserIdById(long id) {
+        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT * FROM challenge_vote cv "
-                        + "JOIN user u on cv.user_id = u.id "
-                        + "JOIN challenge c on cv.challenge_id = c.id "
-                        + "JOIN user c_u on c.user_id = c_u.id "
-                        + "WHERE cv.id = ?"
+                    "SELECT user_id FROM challenge_vote WHERE id = ?"
                 )
             ) {
                 statement.setLong(1, id);
@@ -69,33 +63,7 @@ public class ChallengeVoteRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(new ChallengeVote(
-                    res.getLong("cv.id"),
-                    res.getBoolean("cv.is_upvote"),
-                    new User(
-                        res.getLong("u.id"),
-                        res.getString("u.name"),
-                        res.getString("u.password_hash"),
-                        res.getString("u.role"),
-                        res.getInt("u.points")
-                    ),
-                    new Challenge(
-                        res.getLong("c.id"),
-                        res.getString("c.name"),
-                        res.getString("c.description"),
-                        res.getString("c.initial_code"),
-                        res.getString("c.test_case"),
-                        res.getInt("c.tier"),
-                        res.getInt("c.completed_count"),
-                        new User(
-                            res.getLong("c_u.id"),
-                            res.getString("c_u.name"),
-                            res.getString("c_u.password_hash"),
-                            res.getString("c_u.role"),
-                            res.getInt("c_u.points")
-                        )
-                    )
-                ));
+                return Optional.of(res.getLong("user_id"));
             }
         });
 
