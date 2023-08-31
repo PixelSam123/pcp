@@ -1,6 +1,5 @@
 package io.github.pixelsam123.pcp.challenge.submission.comment;
 
-import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmission;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -48,23 +47,24 @@ public class ChallengeSubmissionCommentResource {
         Uni<Optional<Long>> userIdRetrieval =
             userRepository.findIdByName(ctx.getUserPrincipal().getName());
 
-        Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval =
-            challengeSubmissionRepository.findById(challengeSubmissionCommentToCreate.submissionId());
+        Uni<Long> challengeSubmissionCountRetrieval = challengeSubmissionRepository.countById(
+            challengeSubmissionCommentToCreate.submissionId()
+        );
 
         return Uni
             .combine()
             .all()
-            .unis(userIdRetrieval, challengeSubmissionRetrieval)
+            .unis(userIdRetrieval, challengeSubmissionCountRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
                 Optional<Long> dbUserId = tuple.getItem1();
-                Optional<ChallengeSubmission> dbChallengeSubmission = tuple.getItem2();
+                long dbChallengeSubmissionCount = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
-                if (dbChallengeSubmission.isEmpty()) {
+                if (dbChallengeSubmissionCount == 0) {
                     throw new BadRequestException("Challenge submission doesn't exist");
                 }
 
@@ -81,7 +81,8 @@ public class ChallengeSubmissionCommentResource {
     public Uni<List<ChallengeSubmissionCommentDto>> getChallengeSubmissionCommentsByChallengeSubmissionId(
         @PathParam("challenge_submission_id") long challengeSubmissionId
     ) {
-        return challengeSubmissionCommentRepository
-            .listByChallengeSubmissionId(challengeSubmissionId);
+        return challengeSubmissionCommentRepository.listByChallengeSubmissionId(
+            challengeSubmissionId
+        );
     }
 }

@@ -1,7 +1,5 @@
 package io.github.pixelsam123.pcp.challenge.submission;
 
-import io.github.pixelsam123.pcp.challenge.Challenge;
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -15,7 +13,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @ApplicationScoped
@@ -50,52 +47,20 @@ public class ChallengeSubmissionRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<ChallengeSubmission>> findById(long id) {
-        Supplier<Optional<ChallengeSubmission>> dbOperation = Unchecked.supplier(() -> {
+    public Uni<Long> countById(long id) {
+        Supplier<Long> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT * FROM challenge_submission cs "
-                        + "JOIN user u on cs.user_id = u.id "
-                        + "JOIN challenge c on cs.challenge_id = c.id "
-                        + "JOIN user c_u on c.user_id = c_u.id "
-                        + "WHERE cs.id = ?"
+                    "SELECT COUNT(*) FROM challenge_submission WHERE id = ?"
                 )
             ) {
                 statement.setLong(1, id);
 
                 ResultSet res = statement.executeQuery();
-                if (!res.next()) {
-                    return Optional.empty();
-                }
+                res.next();
 
-                return Optional.of(new ChallengeSubmission(
-                    res.getLong("cs.id"),
-                    res.getString("cs.code"),
-                    new User(
-                        res.getLong("u.id"),
-                        res.getString("u.name"),
-                        res.getString("u.password_hash"),
-                        res.getString("u.role"),
-                        res.getInt("u.points")
-                    ),
-                    new Challenge(
-                        res.getLong("c.id"),
-                        res.getString("c.name"),
-                        res.getString("c.description"),
-                        res.getString("c.initial_code"),
-                        res.getString("c.test_case"),
-                        res.getInt("c.tier"),
-                        res.getInt("c.completed_count"),
-                        new User(
-                            res.getLong("c_u.id"),
-                            res.getString("c_u.name"),
-                            res.getString("c_u.password_hash"),
-                            res.getString("c_u.role"),
-                            res.getInt("c_u.points")
-                        )
-                    )
-                ));
+                return res.getLong(1);
             }
         });
 
@@ -173,7 +138,6 @@ public class ChallengeSubmissionRepository {
         return Uni
             .createFrom()
             .item(dbOperation)
-            .replaceWithVoid()
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 }

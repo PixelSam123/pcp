@@ -1,6 +1,5 @@
 package io.github.pixelsam123.pcp.challenge.submission.vote;
 
-import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmission;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -57,8 +56,8 @@ public class ChallengeSubmissionVoteResource {
                 return dbUser.get();
             }));
 
-        Uni<Optional<ChallengeSubmission>> challengeSubmissionRetrieval =
-            challengeSubmissionRepository.findById(challengeSubmissionVoteToCreate.submissionId());
+        Uni<Long> challengeSubmissionCountRetrieval =
+            challengeSubmissionRepository.countById(challengeSubmissionVoteToCreate.submissionId());
 
         Uni<Long> challengeSubmissionVoteCountRetrieval = existingUserIdRetrieval.flatMap(
             existingDbUserId -> challengeSubmissionVoteRepository
@@ -73,16 +72,16 @@ public class ChallengeSubmissionVoteResource {
             .all()
             .unis(
                 existingUserIdRetrieval,
-                challengeSubmissionRetrieval,
+                challengeSubmissionCountRetrieval,
                 challengeSubmissionVoteCountRetrieval
             )
             .asTuple()
             .flatMap(Unchecked.function((tuple) -> {
                 long existingDbUserId = tuple.getItem1();
-                Optional<ChallengeSubmission> dbChallengeSubmission = tuple.getItem2();
+                long dbChallengeSubmissionCount = tuple.getItem2();
                 long dbChallengeSubmissionVoteCount = tuple.getItem3();
 
-                if (dbChallengeSubmission.isEmpty()) {
+                if (dbChallengeSubmissionCount == 0) {
                     throw new BadRequestException("Submission doesn't exist");
                 }
 
