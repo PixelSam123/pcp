@@ -62,8 +62,7 @@ public class ChallengeSubmissionVoteResource {
         Uni<Long> challengeSubmissionVoteCountRetrieval = existingUserIdRetrieval.flatMap(
             existingDbUserId -> challengeSubmissionVoteRepository
                 .countByChallengeSubmissionIdAndUserId(
-                    challengeSubmissionVoteToCreate.submissionId(),
-                    existingDbUserId
+                    challengeSubmissionVoteToCreate.submissionId(), existingDbUserId
                 )
         );
 
@@ -110,33 +109,30 @@ public class ChallengeSubmissionVoteResource {
     @Path("/{id}")
     @ResponseStatus(RestResponse.StatusCode.NO_CONTENT)
     public Uni<Void> deleteSubmissionVote(@PathParam("id") long id, @Context SecurityContext ctx) {
-        Uni<Optional<Long>> userIdRetrieval = userRepository
-            .findIdByName(ctx.getUserPrincipal().getName());
+        Uni<Optional<Long>> userIdRetrieval =
+            userRepository.findIdByName(ctx.getUserPrincipal().getName());
 
-        Uni<Optional<ChallengeSubmissionVote>> challengeSubmissionVoteRetrieval =
-            challengeSubmissionVoteRepository.findById(id);
+        Uni<Optional<Long>> challengeSubmissionVoteUserIdRetrieval =
+            challengeSubmissionVoteRepository.findUserIdById(id);
 
         return Uni
             .combine()
             .all()
-            .unis(userIdRetrieval, challengeSubmissionVoteRetrieval)
+            .unis(userIdRetrieval, challengeSubmissionVoteUserIdRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
                 Optional<Long> dbUserId = tuple.getItem1();
-                Optional<ChallengeSubmissionVote> dbChallengeSubmissionVote = tuple.getItem2();
+                Optional<Long> dbChallengeSubmissionVoteUserId = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
                 }
 
-                if (dbChallengeSubmissionVote.isEmpty()) {
+                if (dbChallengeSubmissionVoteUserId.isEmpty()) {
                     throw new NotFoundException("Submission Vote Not Found");
                 }
 
-                Long existingDbUserId = dbUserId.get();
-                ChallengeSubmissionVote existingDbSubmissionVote = dbChallengeSubmissionVote.get();
-
-                if (!existingDbUserId.equals(existingDbSubmissionVote.user().id())) {
+                if (!dbUserId.get().equals(dbChallengeSubmissionVoteUserId.get())) {
                     throw new ForbiddenException("Not allowed to delete on another user's behalf");
                 }
 

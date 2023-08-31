@@ -1,8 +1,5 @@
 package io.github.pixelsam123.pcp.challenge.submission.vote;
 
-import io.github.pixelsam123.pcp.challenge.Challenge;
-import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmission;
-import io.github.pixelsam123.pcp.user.User;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -55,18 +52,12 @@ public class ChallengeSubmissionVoteRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<ChallengeSubmissionVote>> findById(long id) {
-        Supplier<Optional<ChallengeSubmissionVote>> dbOperation = Unchecked.supplier(() -> {
+    public Uni<Optional<Long>> findUserIdById(long id) {
+        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT * FROM challenge_submission_vote csv "
-                        + "JOIN user u on csv.user_id = u.id "
-                        + "JOIN challenge_submission cs on csv.challenge_submission_id = cs.id "
-                        + "JOIN user cs_u on cs.user_id = cs_u.id "
-                        + "JOIN challenge cs_c on cs.challenge_id = cs_c.id "
-                        + "JOIN user cs_c_u on cs_c.user_id = cs_c_u.id "
-                        + "WHERE csv.id = ?"
+                    "SELECT user_id FROM challenge_submission_vote WHERE id = ?"
                 )
             ) {
                 statement.setLong(1, id);
@@ -76,44 +67,7 @@ public class ChallengeSubmissionVoteRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(new ChallengeSubmissionVote(
-                    res.getLong("csv.id"),
-                    res.getBoolean("csv.is_upvote"),
-                    new User(
-                        res.getLong("u.id"),
-                        res.getString("u.name"),
-                        res.getString("u.password_hash"),
-                        res.getString("u.role"),
-                        res.getInt("u.points")
-                    ),
-                    new ChallengeSubmission(
-                        res.getLong("cs.id"),
-                        res.getString("cs.code"),
-                        new User(
-                            res.getLong("cs_u.id"),
-                            res.getString("cs_u.name"),
-                            res.getString("cs_u.password_hash"),
-                            res.getString("cs_u.role"),
-                            res.getInt("cs_u.points")
-                        ),
-                        new Challenge(
-                            res.getLong("cs_c.id"),
-                            res.getString("cs_c.name"),
-                            res.getString("cs_c.description"),
-                            res.getString("cs_c.initial_code"),
-                            res.getString("cs_c.test_case"),
-                            res.getInt("cs_c.tier"),
-                            res.getInt("cs_c.completed_count"),
-                            new User(
-                                res.getLong("cs_c_u.id"),
-                                res.getString("cs_c_u.name"),
-                                res.getString("cs_c_u.password_hash"),
-                                res.getString("cs_c_u.role"),
-                                res.getInt("cs_c_u.points")
-                            )
-                        )
-                    )
-                ));
+                return Optional.of(res.getLong("user_id"));
             }
         });
 
