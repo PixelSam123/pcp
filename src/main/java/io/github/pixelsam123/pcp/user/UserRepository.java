@@ -2,6 +2,7 @@ package io.github.pixelsam123.pcp.user;
 
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
+import io.smallrye.mutiny.tuples.Tuple2;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -62,6 +63,34 @@ public class UserRepository {
                 }
 
                 return Optional.of(res.getLong("id"));
+            }
+        });
+
+        return Uni
+            .createFrom()
+            .item(dbOperation)
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    }
+
+    public Uni<Optional<Tuple2<Long, String>>> findIdAndPasswordHashByName(String name) {
+        Supplier<Optional<Tuple2<Long, String>>> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT id, password_hash FROM user WHERE name = ?"
+                )
+            ) {
+                statement.setString(1, name);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(Tuple2.of(
+                    res.getLong("id"),
+                    res.getString("password_hash")
+                ));
             }
         });
 

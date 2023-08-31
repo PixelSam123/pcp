@@ -1,21 +1,26 @@
 package io.github.pixelsam123.pcp.user;
 
-import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
 import java.util.List;
 
 @Tag(name = "users", description = "User creation, viewing and editing")
 @Path("/users")
 public class UserResource {
+    private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final UserRepository userRepository;
 
-    public UserResource(UserRepository userRepository) {
+    public UserResource(
+        Argon2PasswordEncoder argon2PasswordEncoder,
+        UserRepository userRepository
+    ) {
+        this.argon2PasswordEncoder = argon2PasswordEncoder;
         this.userRepository = userRepository;
     }
 
@@ -32,7 +37,7 @@ public class UserResource {
 
                 return userRepository.persist(
                     userToCreate.name(),
-                    BcryptUtil.bcryptHash(userToCreate.password())
+                    argon2PasswordEncoder.encode(userToCreate.password())
                 );
             }));
     }

@@ -43,10 +43,12 @@ public class SessionResource {
                 .ok()
                 .cookie(new NewCookie.Builder("quarkus-credential")
                     .value("")
-                    .path("/")
                     .domain(null)
-                    .maxAge(0)
+                    .path("/")
                     .expiry(Date.from(Instant.EPOCH))
+                    .maxAge(0)
+                    .httpOnly(true)
+                    .sameSite(NewCookie.SameSite.STRICT)
                     .build())
                 .build());
     }
