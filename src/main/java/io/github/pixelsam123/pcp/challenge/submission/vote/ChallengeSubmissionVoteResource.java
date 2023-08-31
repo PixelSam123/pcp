@@ -11,8 +11,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.resteasy.reactive.ResponseStatus;
-import org.jboss.resteasy.reactive.RestResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +38,6 @@ public class ChallengeSubmissionVoteResource {
     @POST
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Uni<Void> createChallengeSubmissionVote(
         ChallengeSubmissionVoteCreateDto challengeSubmissionVoteToCreate,
@@ -107,7 +104,7 @@ public class ChallengeSubmissionVoteResource {
     @DELETE
     @RolesAllowed({"User"})
     @Path("/{id}")
-    @ResponseStatus(RestResponse.StatusCode.NO_CONTENT)
+    @Transactional
     public Uni<Void> deleteSubmissionVote(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Optional<Long>> userIdRetrieval =
             userRepository.findIdByName(ctx.getUserPrincipal().getName());

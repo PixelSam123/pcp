@@ -30,7 +30,6 @@ public class ChallengeResource {
     @POST
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Uni<Void> createChallenge(
         ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx

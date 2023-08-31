@@ -38,7 +38,6 @@ public class ChallengeSubmissionCommentResource {
     @POST
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Uni<Void> createChallengeSubmissionComment(
         ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,

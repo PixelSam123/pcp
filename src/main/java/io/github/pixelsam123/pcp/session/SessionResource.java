@@ -36,7 +36,6 @@ public class SessionResource {
     @POST
     @Path("/logout")
     @RolesAllowed({"User"})
-    @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> sessionLogout() {
         return Uni
             .createFrom()
