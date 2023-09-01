@@ -8,7 +8,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.RestForm;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
