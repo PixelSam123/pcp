@@ -8,6 +8,7 @@ public record ChallengeCreateDto(
     @NotNull int tier,
     @NotBlank String description,
     @NotBlank String initialCode,
-    @NotBlank String testCase
+    @NotBlank String testCase,
+    @NotBlank String codeForVerification
 ) {
 }

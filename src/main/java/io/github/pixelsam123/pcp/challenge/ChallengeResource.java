@@ -1,5 +1,8 @@
 package io.github.pixelsam123.pcp.challenge;
 
+import io.github.pixelsam123.pcp.CodeExecRequest;
+import io.github.pixelsam123.pcp.CodeExecResponse;
+import io.github.pixelsam123.pcp.CodeExecService;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -8,8 +11,10 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,12 +22,16 @@ import java.util.Optional;
 @Tag(name = "challenges", description = "Challenge creation, viewing and editing")
 @Path("/challenges")
 public class ChallengeResource {
+    private final CodeExecService codeExecService;
     private final ChallengeRepository challengeRepository;
     private final UserRepository userRepository;
 
     public ChallengeResource(
-        ChallengeRepository challengeRepository, UserRepository userRepository
+        @RestClient CodeExecService codeExecService,
+        ChallengeRepository challengeRepository,
+        UserRepository userRepository
     ) {
+        this.codeExecService = codeExecService;
         this.challengeRepository = challengeRepository;
         this.userRepository = userRepository;
     }
@@ -40,14 +49,21 @@ public class ChallengeResource {
         Uni<Long> challengeCountRetrieval =
             challengeRepository.countByName(challengeToCreate.name());
 
+        Uni<CodeExecResponse> codeExecRetrieval =
+            codeExecService.getCodeExecResult(new CodeExecRequest(
+                "js",
+                challengeToCreate.codeForVerification() + '\n' + challengeToCreate.testCase()
+            ));
+
         return Uni
             .combine()
             .all()
-            .unis(userIdRetrieval, challengeCountRetrieval)
+            .unis(userIdRetrieval, challengeCountRetrieval, codeExecRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
                 Optional<Long> dbUserId = tuple.getItem1();
                 long dbChallengeCount = tuple.getItem2();
+                CodeExecResponse codeExec = tuple.getItem3();
 
                 if (dbUserId.isEmpty()) {
                     throw new BadRequestException("User of your credentials doesn't exist");
@@ -55,6 +71,15 @@ public class ChallengeResource {
 
                 if (dbChallengeCount > 0) {
                     throw new BadRequestException("Challenge Already Exists");
+                }
+
+                if (codeExec.status() != 0) {
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("Verification code execution error:\n" + codeExec.output())
+                            .build()
+                    );
                 }
 
                 return challengeRepository.persist(challengeToCreate, dbUserId.get());
