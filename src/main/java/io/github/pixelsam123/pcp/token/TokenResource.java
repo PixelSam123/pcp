@@ -21,16 +21,13 @@ import java.util.Set;
 public class TokenResource {
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final UserRepository userRepository;
-    private final String tokenSecretKey;
 
     public TokenResource(
         Argon2PasswordEncoder argon2PasswordEncoder,
-        UserRepository userRepository,
-        @ConfigProperty(name = "token_secret_key") String tokenSecretKey
+        UserRepository userRepository
     ) {
         this.argon2PasswordEncoder = argon2PasswordEncoder;
         this.userRepository = userRepository;
-        this.tokenSecretKey = tokenSecretKey;
     }
 
     @POST
@@ -78,6 +75,6 @@ public class TokenResource {
             .upn(username)
             .groups(Set.of("User"))
             .expiresIn(Duration.ofMinutes(60))
-            .signWithSecret(tokenSecretKey);
+            .sign();
     }
 }
