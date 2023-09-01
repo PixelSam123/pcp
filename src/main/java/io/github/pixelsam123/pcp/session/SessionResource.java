@@ -6,15 +6,21 @@ import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.Instant;
 import java.util.Date;
 
 @Path("/session")
 public class SessionResource {
+    private final String cookieName;
     private final UserRepository userRepository;
 
-    public SessionResource(UserRepository userRepository) {
+    public SessionResource(
+        @ConfigProperty(name = "mp.jwt.token.cookie") String cookieName,
+        UserRepository userRepository
+    ) {
+        this.cookieName = cookieName;
         this.userRepository = userRepository;
     }
 
@@ -41,7 +47,7 @@ public class SessionResource {
             .createFrom()
             .item(() -> Response
                 .ok()
-                .cookie(new NewCookie.Builder("quarkus-credential")
+                .cookie(new NewCookie.Builder(cookieName)
                     .value("")
                     .domain(null)
                     .path("/")

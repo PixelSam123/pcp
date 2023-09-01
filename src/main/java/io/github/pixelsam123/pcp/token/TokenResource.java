@@ -8,6 +8,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.RestForm;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
@@ -18,13 +19,16 @@ import java.util.Set;
 
 @Path("/token")
 public class TokenResource {
+    private final String cookieName;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final UserRepository userRepository;
 
     public TokenResource(
+        @ConfigProperty(name = "mp.jwt.token.cookie") String cookieName,
         Argon2PasswordEncoder argon2PasswordEncoder,
         UserRepository userRepository
     ) {
+        this.cookieName = cookieName;
         this.argon2PasswordEncoder = argon2PasswordEncoder;
         this.userRepository = userRepository;
     }
@@ -51,7 +55,7 @@ public class TokenResource {
 
                 return Response
                     .ok(new Token(token, "Bearer"))
-                    .cookie(new NewCookie.Builder("quarkus-credential")
+                    .cookie(new NewCookie.Builder(cookieName)
                         .value(token)
                         .domain(null)
                         .path("/")
