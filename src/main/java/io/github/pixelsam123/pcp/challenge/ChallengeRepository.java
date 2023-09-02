@@ -3,6 +3,7 @@ package io.github.pixelsam123.pcp.challenge;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
+import io.smallrye.mutiny.tuples.Tuple2;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -70,12 +71,12 @@ public class ChallengeRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<Integer>> findTierById(long id) {
-        Supplier<Optional<Integer>> dbOperation = Unchecked.supplier(() -> {
+    public Uni<Optional<Tuple2<Integer, String>>> findTierAndTestCaseById(long id) {
+        Supplier<Optional<Tuple2<Integer, String>>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT tier FROM challenge WHERE id = ?"
+                    "SELECT tier, test_case FROM challenge WHERE id = ?"
                 )
             ) {
                 statement.setLong(1, id);
@@ -85,7 +86,7 @@ public class ChallengeRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(res.getInt("tier"));
+                return Optional.of(Tuple2.of(res.getInt("tier"), res.getString("test_case")));
             }
         });
 
@@ -217,7 +218,7 @@ public class ChallengeRepository {
                         + "u.points "
                         + "FROM challenge c JOIN user u on c.user_id = u.id "
                         + (username == null ? "" : "WHERE u.name = ? ")
-                        + "WHERE c.tier IN ("
+                        + (username == null ? "WHERE" : "AND") + " c.tier IN ("
                         + questionMarks.substring(0, questionMarks.length() - ", ".length())
                         + ") "
                         + sort.sql

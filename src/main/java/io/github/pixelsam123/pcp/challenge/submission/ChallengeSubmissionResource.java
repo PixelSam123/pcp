@@ -1,16 +1,22 @@
 package io.github.pixelsam123.pcp.challenge.submission;
 
+import io.github.pixelsam123.pcp.CodeExecRequest;
+import io.github.pixelsam123.pcp.CodeExecResponse;
+import io.github.pixelsam123.pcp.CodeExecService;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.tuples.Tuple2;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,15 +27,18 @@ import java.util.Optional;
 )
 @Path("/challenge_submissions")
 public class ChallengeSubmissionResource {
+    private final CodeExecService codeExecService;
     private final ChallengeRepository challengeRepository;
     private final ChallengeSubmissionRepository challengeSubmissionRepository;
     private final UserRepository userRepository;
 
     public ChallengeSubmissionResource(
+        @RestClient CodeExecService codeExecService,
         ChallengeRepository challengeRepository,
         ChallengeSubmissionRepository challengeSubmissionRepository,
         UserRepository userRepository
     ) {
+        this.codeExecService = codeExecService;
         this.challengeRepository = challengeRepository;
         this.challengeSubmissionRepository = challengeSubmissionRepository;
         this.userRepository = userRepository;
@@ -53,8 +62,16 @@ public class ChallengeSubmissionResource {
                 return dbUser.get();
             }));
 
-        Uni<Optional<Integer>> challengeTierRetrieval =
-            challengeRepository.findTierById(challengeSubmissionToCreate.challengeId());
+        Uni<Tuple2<Integer, String>> challengeTierAndTestCaseRetrieval =
+            challengeRepository
+                .findTierAndTestCaseById(challengeSubmissionToCreate.challengeId())
+                .map(Unchecked.function(tuple -> {
+                    if (tuple.isEmpty()) {
+                        throw new BadRequestException("Challenge doesn't exist");
+                    }
+
+                    return tuple.get();
+                }));
 
         Uni<Long> challengeSubmissionCountRetrieval = existingUserIdRetrieval.flatMap(
             existingDbUserId -> challengeSubmissionRepository.countByChallengeIdAndUserId(
@@ -62,28 +79,43 @@ public class ChallengeSubmissionResource {
             )
         );
 
+        Uni<CodeExecResponse> codeExecRetrieval = challengeTierAndTestCaseRetrieval
+            .flatMap(tuple -> codeExecService.getCodeExecResult(new CodeExecRequest(
+                "js",
+                challengeSubmissionToCreate.code() + '\n' + tuple.getItem2()
+            )));
+
         return Uni
             .combine()
             .all()
             .unis(
                 existingUserIdRetrieval,
-                challengeTierRetrieval,
-                challengeSubmissionCountRetrieval
+                challengeTierAndTestCaseRetrieval,
+                challengeSubmissionCountRetrieval,
+                codeExecRetrieval
             )
             .asTuple()
             .flatMap(Unchecked.function((tuple) -> {
                 long existingDbUserId = tuple.getItem1();
-                Optional<Integer> dbChallengeTier = tuple.getItem2();
+                Tuple2<Integer, String> dbChallengeTierAndTestCase = tuple.getItem2();
                 long dbChallengeSubmissionCount = tuple.getItem3();
+                CodeExecResponse codeExec = tuple.getItem4();
 
-                if (dbChallengeTier.isEmpty()) {
-                    throw new BadRequestException("Challenge doesn't exist");
+                if (codeExec.status() != 0) {
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("Submission code execution error:\n" + codeExec.output())
+                            .build()
+                    );
                 }
+
+                int challengeTier = dbChallengeTierAndTestCase.getItem1();
 
                 Uni<Void> pointsAdditionTask =
                     dbChallengeSubmissionCount < 1 ? userRepository.addPointsById(
                         existingDbUserId,
-                        pointsForTier(dbChallengeTier.get())
+                        pointsForTier(challengeTier)
                     ) : Uni.createFrom().voidItem();
 
                 Uni<Void> challengeCompletedCountAdditionTask =
