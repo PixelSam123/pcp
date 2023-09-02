@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS user
 CREATE TABLE IF NOT EXISTS challenge
 (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    timestamp       TIMESTAMP DEFAULT NOW(),
     name            VARCHAR(255) UNIQUE,
     description     VARCHAR(255) NOT NULL,
     initial_code    VARCHAR(255) NOT NULL,
