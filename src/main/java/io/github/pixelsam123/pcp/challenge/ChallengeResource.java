@@ -120,4 +120,39 @@ public class ChallengeResource {
             return dbChallenge.get();
         }));
     }
+
+    @DELETE
+    @RolesAllowed({"User"})
+    @Path("/{id}")
+    @Transactional
+    public Uni<Void> deleteChallenge(@PathParam("id") long id, @Context SecurityContext ctx) {
+        Uni<Optional<Long>> userIdRetrieval =
+            userRepository.findIdByName(ctx.getUserPrincipal().getName());
+
+        Uni<Optional<Long>> challengeUserIdRetrieval = challengeRepository.findUserIdById(id);
+
+        return Uni
+            .combine()
+            .all()
+            .unis(userIdRetrieval, challengeUserIdRetrieval)
+            .asTuple()
+            .flatMap(Unchecked.function(tuple -> {
+                Optional<Long> dbUserId = tuple.getItem1();
+                Optional<Long> dbChallengeUserId = tuple.getItem2();
+
+                if (dbUserId.isEmpty()) {
+                    throw new BadRequestException("User of your credentials doesn't exist");
+                }
+
+                if (dbChallengeUserId.isEmpty()) {
+                    throw new NotFoundException("Challenge Not Found");
+                }
+
+                if (!dbUserId.get().equals(dbChallengeUserId.get())) {
+                    throw new ForbiddenException("Not allowed to delete on another user's behalf");
+                }
+
+                return challengeRepository.deleteById(id);
+            }));
+    }
 }

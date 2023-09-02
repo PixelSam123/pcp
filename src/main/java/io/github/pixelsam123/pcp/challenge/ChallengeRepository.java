@@ -120,6 +120,31 @@ public class ChallengeRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
+    public Uni<Optional<Long>> findUserIdById(long id) {
+        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT user_id FROM challenge WHERE id = ?"
+                )
+            ) {
+                statement.setLong(1, id);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(res.getLong("user_id"));
+            }
+        });
+
+        return Uni
+            .createFrom()
+            .item(dbOperation)
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    }
+
     public Uni<Optional<ChallengeDto>> findByNameDto(String name) {
         Supplier<Optional<ChallengeDto>> dbOperation = Unchecked.supplier(() -> {
             try (
@@ -283,6 +308,32 @@ public class ChallengeRepository {
                 if (statement.executeUpdate() < 1) {
                     throw new InternalServerErrorException(
                         "Insertion error: inserted row count is less than 1"
+                    );
+                }
+
+                return null;
+            }
+        });
+
+        return Uni
+            .createFrom()
+            .item(dbOperation)
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    }
+
+    public Uni<Void> deleteById(long id) {
+        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "DELETE FROM challenge WHERE id = ?"
+                )
+            ) {
+                statement.setLong(1, id);
+
+                if (statement.executeUpdate() < 1) {
+                    throw new InternalServerErrorException(
+                        "Deletion error: deleted row count is less than 1"
                     );
                 }
 
