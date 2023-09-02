@@ -16,6 +16,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,8 +89,23 @@ public class ChallengeResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeBriefDto>> getChallenges() {
-        return challengeRepository.listAllBrief();
+    public Uni<List<ChallengeBriefDto>> getChallenges(
+        @QueryParam("tiers") String tiers,
+        @QueryParam("username") String username,
+        @QueryParam("sortBy") String sortBy
+    ) {
+        if (tiers == null) tiers = "1,2,3,4,5";
+        if (sortBy == null) sortBy = "newest";
+
+        List<Integer> tierList = Arrays.stream(tiers.split(",")).map(Integer::parseInt).toList();
+        ChallengeSort sort = switch (sortBy) {
+            case "oldest" -> ChallengeSort.OLDEST;
+            case "mostCompleted" -> ChallengeSort.MOST_COMPLETED;
+            case "leastCompleted" -> ChallengeSort.LEAST_COMPLETED;
+            default -> ChallengeSort.NEWEST;
+        };
+
+        return challengeRepository.list(tierList, username, sort);
     }
 
     @GET

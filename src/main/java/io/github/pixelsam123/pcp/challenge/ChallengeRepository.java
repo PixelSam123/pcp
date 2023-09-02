@@ -167,8 +167,18 @@ public class ChallengeRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<List<ChallengeBriefDto>> listAllBrief() {
+    public Uni<List<ChallengeBriefDto>> list(
+        List<Integer> tiers,
+        String username,
+        ChallengeSort sort
+    ) {
+        if (tiers.isEmpty()) {
+            return Uni.createFrom().item(List::of);
+        }
+
         Supplier<List<ChallengeBriefDto>> dbOperation = Unchecked.supplier(() -> {
+            String questionMarks = "?, ".repeat(tiers.size());
+
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -180,9 +190,26 @@ public class ChallengeRepository {
                         + "u.id, "
                         + "u.name, "
                         + "u.points "
-                        + "FROM challenge c JOIN user u on c.user_id = u.id"
+                        + "FROM challenge c JOIN user u on c.user_id = u.id "
+                        + (username == null ? "" : "WHERE u.name = ? ")
+                        + "WHERE c.tier IN ("
+                        + questionMarks.substring(0, questionMarks.length() - ", ".length())
+                        + ") "
+                        + sort.sql
                 )
             ) {
+                int tierPlaceholderIdx = 1;
+
+                if (username != null) {
+                    statement.setString(1, username);
+                    tierPlaceholderIdx = 2;
+                }
+
+                for (int tier : tiers) {
+                    statement.setInt(tierPlaceholderIdx, tier);
+                    tierPlaceholderIdx++;
+                }
+
                 List<ChallengeBriefDto> list = new ArrayList<>();
 
                 ResultSet res = statement.executeQuery();
