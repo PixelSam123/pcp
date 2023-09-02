@@ -4,7 +4,6 @@ public record User(
     long id,
     String name,
     String passwordHash,
-    String role,
     int points
 ) {
 }

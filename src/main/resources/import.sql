@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS user
     id            BIGINT PRIMARY KEY AUTO_INCREMENT,
     name          VARCHAR(255) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role          VARCHAR(255) DEFAULT 'User',
     points        INT          DEFAULT 0
 );
 
