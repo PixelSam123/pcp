@@ -3,6 +3,8 @@ package io.github.pixelsam123.pcp;
 import io.github.pixelsam123.pcp.challenge.ChallengeBriefDto;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.challenge.ChallengeSort;
+import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVoteRepository;
+import io.github.pixelsam123.pcp.challenge.vote.ChallengeVoteRepository;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -15,20 +17,27 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Path("/session")
 public class SessionResource {
     private final String cookieName;
     private final ChallengeRepository challengeRepository;
+    private final ChallengeVoteRepository challengeVoteRepository;
+    private final ChallengeSubmissionVoteRepository challengeSubmissionVoteRepository;
     private final UserRepository userRepository;
 
     public SessionResource(
         @ConfigProperty(name = "mp.jwt.token.cookie") String cookieName,
         ChallengeRepository challengeRepository,
+        ChallengeVoteRepository challengeVoteRepository,
+        ChallengeSubmissionVoteRepository challengeSubmissionVoteRepository,
         UserRepository userRepository
     ) {
         this.cookieName = cookieName;
         this.challengeRepository = challengeRepository;
+        this.challengeVoteRepository = challengeVoteRepository;
+        this.challengeSubmissionVoteRepository = challengeSubmissionVoteRepository;
         this.userRepository = userRepository;
     }
 
@@ -61,6 +70,33 @@ public class SessionResource {
             List.of(1, 2, 3, 4, 5),
             ctx.getUserPrincipal().getName(),
             ChallengeSort.NEWEST
+        );
+    }
+
+    @GET
+    @Path("/challenge_votes/{challenge_id}")
+    @RolesAllowed({"User"})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Optional<Boolean>> sessionChallengeIsUpvoteByChallengeId(
+        @PathParam("challenge_id") long challengeId, @Context SecurityContext ctx
+    ) {
+        return challengeVoteRepository.findIsUpvoteByChallengeIdAndUserName(
+            challengeId,
+            ctx.getUserPrincipal().getName()
+        );
+    }
+
+    @GET
+    @Path("/challenge_submission_votes/{challenge_submission_id}")
+    @RolesAllowed({"User"})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Optional<Boolean>> sessionChallengeSubmissionIsUpvoteByChallengeSubmissionId(
+        @PathParam("challenge_submission_id") long challengeSubmissionId,
+        @Context SecurityContext ctx
+    ) {
+        return challengeSubmissionVoteRepository.findIsUpvoteByChallengeSubmissionIdAndUserName(
+            challengeSubmissionId,
+            ctx.getUserPrincipal().getName()
         );
     }
 

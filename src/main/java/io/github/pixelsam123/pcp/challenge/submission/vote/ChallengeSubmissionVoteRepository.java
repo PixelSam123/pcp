@@ -77,6 +77,37 @@ public class ChallengeSubmissionVoteRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
+    public Uni<Optional<Boolean>> findIsUpvoteByChallengeSubmissionIdAndUserName(
+        long challengeSubmissionId,
+        String userName
+    ) {
+        Supplier<Optional<Boolean>> dbOperation = Unchecked.supplier(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT csv.is_upvote FROM challenge_submission_vote csv "
+                        + "JOIN user u on csv.user_id = u.id "
+                        + "WHERE csv.challenge_submission_id = ? AND u.name = ?"
+                )
+            ) {
+                statement.setLong(1, challengeSubmissionId);
+                statement.setString(2, userName);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(res.getBoolean("csv.is_upvote"));
+            }
+        });
+
+        return Uni
+            .createFrom()
+            .item(dbOperation)
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+    }
+
     public Uni<List<ChallengeSubmissionVoteDto>> listByChallengeSubmissionId(
         long challengeSubmissionId
     ) {
