@@ -18,6 +18,19 @@ First, build the app with Gradle:
 ./gradlew build
 ```
 
+Then, prepare public and private key pairs.  
+The location to put these in are WIP (both are currently configured to be at `src/main/resources`)
+
+```
+cd src/main/resources
+
+openssl genrsa -out rsaPrivateKey.pem 2048
+openssl rsa -pubout -in rsaPrivateKey.pem -out publicKey.pem
+
+openssl pkcs8 -topk8 -nocrypt -inform pem -in rsaPrivateKey.pem -outform pem -out privateKey.pem
+rm rsaPrivateKey.pem
+```
+
 You need to run the app with these environment variables, either from the command line or a `.env` file.
 
 ```
