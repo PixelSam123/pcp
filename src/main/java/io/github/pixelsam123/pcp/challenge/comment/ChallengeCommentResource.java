@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -58,11 +59,21 @@ public class ChallengeCommentResource {
                 long dbChallengeCount = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException("User of your credentials doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User of your credentials doesn't exist")
+                            .build()
+                    );
                 }
 
                 if (dbChallengeCount == 0) {
-                    throw new BadRequestException("Challenge doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("Challenge doesn't exist")
+                            .build()
+                    );
                 }
 
                 return challengeCommentRepository.persist(challengeCommentToCreate, dbUserId.get());
@@ -79,7 +90,12 @@ public class ChallengeCommentResource {
             .findIdByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
-                    throw new NotFoundException("Challenge Not Found");
+                    throw new NotFoundException(
+                        Response
+                            .status(Response.Status.NOT_FOUND)
+                            .entity("Challenge Not Found")
+                            .build()
+                    );
                 }
 
                 return dbChallenge.get();

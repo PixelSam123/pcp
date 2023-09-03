@@ -19,7 +19,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.List;
-import java.util.Optional;
 
 @Tag(
     name = "challenge_submissions",
@@ -52,11 +51,16 @@ public class ChallengeSubmissionResource {
         ChallengeSubmissionCreateDto challengeSubmissionToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<Long> existingUserIdRetrieval = userRepository
+        Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
-                    throw new BadRequestException("User of your credentials doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User of your credentials doesn't exist")
+                            .build()
+                    );
                 }
 
                 return dbUser.get();
@@ -67,15 +71,20 @@ public class ChallengeSubmissionResource {
                 .findTierAndTestCaseById(challengeSubmissionToCreate.challengeId())
                 .map(Unchecked.function(tuple -> {
                     if (tuple.isEmpty()) {
-                        throw new BadRequestException("Challenge doesn't exist");
+                        throw new BadRequestException(
+                            Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity("Challenge doesn't exist")
+                                .build()
+                        );
                     }
 
                     return tuple.get();
                 }));
 
-        Uni<Long> challengeSubmissionCountRetrieval = existingUserIdRetrieval.flatMap(
-            existingDbUserId -> challengeSubmissionRepository.countByChallengeIdAndUserId(
-                challengeSubmissionToCreate.challengeId(), existingDbUserId
+        Uni<Long> challengeSubmissionCountRetrieval = userIdRetrieval.flatMap(
+            dbUserId -> challengeSubmissionRepository.countByChallengeIdAndUserId(
+                challengeSubmissionToCreate.challengeId(), dbUserId
             )
         );
 
@@ -89,14 +98,14 @@ public class ChallengeSubmissionResource {
             .combine()
             .all()
             .unis(
-                existingUserIdRetrieval,
+                userIdRetrieval,
                 challengeTierAndTestCaseRetrieval,
                 challengeSubmissionCountRetrieval,
                 codeExecRetrieval
             )
             .asTuple()
             .flatMap(Unchecked.function((tuple) -> {
-                long existingDbUserId = tuple.getItem1();
+                long dbUserId = tuple.getItem1();
                 Tuple2<Integer, String> dbChallengeTierAndTestCase = tuple.getItem2();
                 long dbChallengeSubmissionCount = tuple.getItem3();
                 CodeExecResponse codeExec = tuple.getItem4();
@@ -114,7 +123,7 @@ public class ChallengeSubmissionResource {
 
                 Uni<Void> pointsAdditionTask =
                     dbChallengeSubmissionCount < 1 ? userRepository.addPointsById(
-                        existingDbUserId,
+                        dbUserId,
                         pointsForTier(challengeTier)
                     ) : Uni.createFrom().voidItem();
 
@@ -129,7 +138,7 @@ public class ChallengeSubmissionResource {
                     .unis(
                         challengeSubmissionRepository.persist(
                             challengeSubmissionToCreate,
-                            existingDbUserId
+                            dbUserId
                         ),
                         pointsAdditionTask,
                         challengeCompletedCountAdditionTask
@@ -149,7 +158,12 @@ public class ChallengeSubmissionResource {
             .findIdByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
-                    throw new NotFoundException("Challenge Not Found");
+                    throw new NotFoundException(
+                        Response
+                            .status(Response.Status.NOT_FOUND)
+                            .entity("Challenge Not Found")
+                            .build()
+                    );
                 }
 
                 return dbChallenge.get();

@@ -34,7 +34,7 @@ public class ChallengeCommentRepository {
                         + "u.id, "
                         + "u.name, "
                         + "u.points "
-                        + "FROM challenge_comment cc JOIN user u on cc.user_id = u.id "
+                        + "FROM challenge_comment cc JOIN user u ON cc.user_id = u.id "
                         + "WHERE challenge_id = ?"
                 )
             ) {

@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -60,11 +61,21 @@ public class ChallengeSubmissionCommentResource {
                 long dbChallengeSubmissionCount = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException("User of your credentials doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User of your credentials doesn't exist")
+                            .build()
+                    );
                 }
 
                 if (dbChallengeSubmissionCount == 0) {
-                    throw new BadRequestException("Challenge submission doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("Challenge submission doesn't exist")
+                            .build()
+                    );
                 }
 
                 return challengeSubmissionCommentRepository.persist(

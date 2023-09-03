@@ -5,6 +5,7 @@ import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
@@ -32,7 +33,12 @@ public class UserResource {
             .countByName(userToCreate.name())
             .flatMap(Unchecked.function(dbUserCount -> {
                 if (dbUserCount > 0) {
-                    throw new BadRequestException("User already exists");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User already exists")
+                            .build()
+                    );
                 }
 
                 return userRepository.persist(
@@ -54,7 +60,12 @@ public class UserResource {
     public Uni<UserBriefDto> getUserByName(@PathParam("name") String name) {
         return userRepository.findByNameBrief(name).map(Unchecked.function(dbUser -> {
             if (dbUser.isEmpty()) {
-                throw new NotFoundException("User not found");
+                throw new NotFoundException(
+                    Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity("User not found")
+                        .build()
+                );
             }
 
             return dbUser.get();

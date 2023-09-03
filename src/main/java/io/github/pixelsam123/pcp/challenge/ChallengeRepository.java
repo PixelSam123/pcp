@@ -161,7 +161,7 @@ public class ChallengeRepository {
                         + "u.points, "
                         + "c.description, "
                         + "c.initial_code "
-                        + "FROM challenge c JOIN user u on c.user_id = u.id WHERE c.name = ?"
+                        + "FROM challenge c JOIN user u ON c.user_id = u.id WHERE c.name = ?"
                 )
             ) {
                 statement.setString(1, name);
@@ -216,7 +216,7 @@ public class ChallengeRepository {
                         + "u.id, "
                         + "u.name, "
                         + "u.points "
-                        + "FROM challenge c JOIN user u on c.user_id = u.id "
+                        + "FROM challenge c JOIN user u ON c.user_id = u.id "
                         + (username == null ? "" : "WHERE u.name = ? ")
                         + (username == null ? "WHERE" : "AND") + " c.tier IN ("
                         + questionMarks.substring(0, questionMarks.length() - ", ".length())

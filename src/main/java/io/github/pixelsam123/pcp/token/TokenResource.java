@@ -23,6 +23,8 @@ public class TokenResource {
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final UserRepository userRepository;
 
+    private final int tokenMinutesDuration = 60;
+
     public TokenResource(
         @ConfigProperty(name = "mp.jwt.token.cookie") String cookieName,
         Argon2PasswordEncoder argon2PasswordEncoder,
@@ -41,17 +43,27 @@ public class TokenResource {
             .findIdAndPasswordHashByName(username)
             .map(Unchecked.function(tuple -> {
                 if (tuple.isEmpty()) {
-                    throw new BadRequestException("Incorrect username");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("Incorrect username")
+                            .build()
+                    );
                 }
 
-                long existingDbUserId = tuple.get().getItem1();
-                String existingDbUserPasswordHash = tuple.get().getItem2();
+                long dbUserId = tuple.get().getItem1();
+                String dbUserPasswordHash = tuple.get().getItem2();
 
-                if (!verifyPassword(password, existingDbUserPasswordHash)) {
-                    throw new BadRequestException("Incorrect password");
+                if (!verifyPassword(password, dbUserPasswordHash)) {
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("Incorrect password")
+                            .build()
+                    );
                 }
 
-                String token = createToken(Long.toString(existingDbUserId), username);
+                String token = createToken(Long.toString(dbUserId), username);
 
                 return Response
                     .ok(new Token(token, "Bearer"))
@@ -59,8 +71,10 @@ public class TokenResource {
                         .value(token)
                         .domain(null)
                         .path("/")
-                        .expiry(Date.from(Instant.now().plus(Duration.ofMinutes(60))))
-                        .maxAge(60 * 60)
+                        .expiry(
+                            Date.from(Instant.now().plus(Duration.ofMinutes(tokenMinutesDuration)))
+                        )
+                        .maxAge(tokenMinutesDuration * 60)
                         .httpOnly(true)
                         .sameSite(NewCookie.SameSite.STRICT)
                         .build())
@@ -77,7 +91,7 @@ public class TokenResource {
             .subject(id)
             .upn(username)
             .groups(Set.of("User"))
-            .expiresIn(Duration.ofMinutes(60))
+            .expiresIn(Duration.ofMinutes(tokenMinutesDuration))
             .sign();
     }
 }

@@ -28,7 +28,8 @@ public class ChallengeSubmissionRepository {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT COUNT(*) FROM challenge_submission WHERE challenge_id = ? AND user_id = ?"
+                    "SELECT COUNT(*) FROM challenge_submission "
+                        + "WHERE challenge_id = ? AND user_id = ?"
                 )
             ) {
                 statement.setLong(1, challengeId);
@@ -81,7 +82,7 @@ public class ChallengeSubmissionRepository {
                         + "u.id,"
                         + "u.name,"
                         + "u.points "
-                        + "FROM challenge_submission cs JOIN user u on cs.user_id = u.id "
+                        + "FROM challenge_submission cs JOIN user u ON cs.user_id = u.id "
                         + "WHERE cs.challenge_id = ?"
                 )
             ) {

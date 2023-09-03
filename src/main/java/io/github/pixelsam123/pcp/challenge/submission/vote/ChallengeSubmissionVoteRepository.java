@@ -90,7 +90,7 @@ public class ChallengeSubmissionVoteRepository {
                         + "u.id,"
                         + "u.name,"
                         + "u.points "
-                        + "FROM challenge_submission_vote csv JOIN user u on csv.user_id = u.id "
+                        + "FROM challenge_submission_vote csv JOIN user u ON csv.user_id = u.id "
                         + "WHERE challenge_submission_id = ?"
                 )
             ) {

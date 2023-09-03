@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -39,44 +40,59 @@ public class ChallengeVoteResource {
     public Uni<Void> createChallengeVote(
         ChallengeVoteCreateDto challengeVoteToCreate, @Context SecurityContext ctx
     ) {
-        Uni<Long> existingUserIdRetrieval = userRepository
+        Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
-            .map(Unchecked.function(dbUser -> {
-                if (dbUser.isEmpty()) {
-                    throw new BadRequestException("User of your credentials doesn't exist");
+            .map(Unchecked.function(dbUserId -> {
+                if (dbUserId.isEmpty()) {
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User of your credentials doesn't exist")
+                            .build()
+                    );
                 }
 
-                return dbUser.get();
+                return dbUserId.get();
             }));
 
         Uni<Long> challengeCountRetrieval =
             challengeRepository.countById(challengeVoteToCreate.challengeId());
 
-        Uni<Long> challengeVoteCountRetrieval = existingUserIdRetrieval.flatMap(
-            existingDbUserId -> challengeVoteRepository.countByChallengeIdAndUserId(
-                challengeVoteToCreate.challengeId(), existingDbUserId
+        Uni<Long> challengeVoteCountRetrieval = userIdRetrieval.flatMap(
+            dbUserId -> challengeVoteRepository.countByChallengeIdAndUserId(
+                challengeVoteToCreate.challengeId(), dbUserId
             )
         );
 
         return Uni
             .combine()
             .all()
-            .unis(existingUserIdRetrieval, challengeCountRetrieval, challengeVoteCountRetrieval)
+            .unis(userIdRetrieval, challengeCountRetrieval, challengeVoteCountRetrieval)
             .asTuple()
             .flatMap(Unchecked.function((tuple) -> {
-                long existingDbUserId = tuple.getItem1();
+                long dbUserId = tuple.getItem1();
                 long dbChallengeCount = tuple.getItem2();
                 long dbChallengeVoteCount = tuple.getItem3();
 
                 if (dbChallengeCount == 0) {
-                    throw new BadRequestException("Challenge doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("Challenge doesn't exist")
+                            .build()
+                    );
                 }
 
                 if (dbChallengeVoteCount > 0) {
-                    throw new BadRequestException("User already voted on this challenge");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User already voted on this challenge")
+                            .build()
+                    );
                 }
 
-                return challengeVoteRepository.persist(challengeVoteToCreate, existingDbUserId);
+                return challengeVoteRepository.persist(challengeVoteToCreate, dbUserId);
             }));
     }
 
@@ -90,7 +106,12 @@ public class ChallengeVoteResource {
             .findIdByName(challengeName)
             .map(Unchecked.function(dbChallengeId -> {
                 if (dbChallengeId.isEmpty()) {
-                    throw new NotFoundException("Challenge Not Found");
+                    throw new NotFoundException(
+                        Response
+                            .status(Response.Status.NOT_FOUND)
+                            .entity("Challenge Not Found")
+                            .build()
+                    );
                 }
 
                 return dbChallengeId.get();
@@ -120,15 +141,30 @@ public class ChallengeVoteResource {
                 Optional<Long> dbChallengeVoteUserId = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException("User of your credentials doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User of your credentials doesn't exist")
+                            .build()
+                    );
                 }
 
                 if (dbChallengeVoteUserId.isEmpty()) {
-                    throw new NotFoundException("Challenge Vote Not Found");
+                    throw new NotFoundException(
+                        Response
+                            .status(Response.Status.NOT_FOUND)
+                            .entity("Challenge Vote Not Found")
+                            .build()
+                    );
                 }
 
                 if (!dbUserId.get().equals(dbChallengeVoteUserId.get())) {
-                    throw new ForbiddenException("Not allowed to delete on another user's behalf");
+                    throw new ForbiddenException(
+                        Response
+                            .status(Response.Status.FORBIDDEN)
+                            .entity("Not allowed to delete on another user's behalf")
+                            .build()
+                    );
                 }
 
                 return challengeVoteRepository.deleteById(id);

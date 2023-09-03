@@ -84,7 +84,7 @@ public class ChallengeVoteRepository {
                         + "u.id, "
                         + "u.name, "
                         + "u.points "
-                        + "FROM challenge_vote cv JOIN user u on cv.user_id = u.id "
+                        + "FROM challenge_vote cv JOIN user u ON cv.user_id = u.id "
                         + "WHERE cv.challenge_id = ?"
                 )
             ) {

@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -43,11 +44,16 @@ public class ChallengeSubmissionVoteResource {
         ChallengeSubmissionVoteCreateDto challengeSubmissionVoteToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<Long> existingUserIdRetrieval = userRepository
+        Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
-                    throw new BadRequestException("User of your credentials doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User of your credentials doesn't exist")
+                            .build()
+                    );
                 }
 
                 return dbUser.get();
@@ -56,38 +62,47 @@ public class ChallengeSubmissionVoteResource {
         Uni<Long> challengeSubmissionCountRetrieval =
             challengeSubmissionRepository.countById(challengeSubmissionVoteToCreate.submissionId());
 
-        Uni<Long> challengeSubmissionVoteCountRetrieval = existingUserIdRetrieval.flatMap(
-            existingDbUserId -> challengeSubmissionVoteRepository
-                .countByChallengeSubmissionIdAndUserId(
-                    challengeSubmissionVoteToCreate.submissionId(), existingDbUserId
-                )
+        Uni<Long> challengeSubmissionVoteCountRetrieval = userIdRetrieval.flatMap(
+            dbUserId -> challengeSubmissionVoteRepository.countByChallengeSubmissionIdAndUserId(
+                challengeSubmissionVoteToCreate.submissionId(), dbUserId
+            )
         );
 
         return Uni
             .combine()
             .all()
             .unis(
-                existingUserIdRetrieval,
+                userIdRetrieval,
                 challengeSubmissionCountRetrieval,
                 challengeSubmissionVoteCountRetrieval
             )
             .asTuple()
             .flatMap(Unchecked.function((tuple) -> {
-                long existingDbUserId = tuple.getItem1();
+                long dbUserId = tuple.getItem1();
                 long dbChallengeSubmissionCount = tuple.getItem2();
                 long dbChallengeSubmissionVoteCount = tuple.getItem3();
 
                 if (dbChallengeSubmissionCount == 0) {
-                    throw new BadRequestException("Submission doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("Submission doesn't exist")
+                            .build()
+                    );
                 }
 
                 if (dbChallengeSubmissionVoteCount > 0) {
-                    throw new BadRequestException("User already voted on this submission");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User already voted on this submission")
+                            .build()
+                    );
                 }
 
                 return challengeSubmissionVoteRepository.persist(
                     challengeSubmissionVoteToCreate,
-                    existingDbUserId
+                    dbUserId
                 );
             }));
     }
@@ -122,15 +137,30 @@ public class ChallengeSubmissionVoteResource {
                 Optional<Long> dbChallengeSubmissionVoteUserId = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException("User of your credentials doesn't exist");
+                    throw new BadRequestException(
+                        Response
+                            .status(Response.Status.BAD_REQUEST)
+                            .entity("User of your credentials doesn't exist")
+                            .build()
+                    );
                 }
 
                 if (dbChallengeSubmissionVoteUserId.isEmpty()) {
-                    throw new NotFoundException("Submission Vote Not Found");
+                    throw new NotFoundException(
+                        Response
+                            .status(Response.Status.NOT_FOUND)
+                            .entity("Submission Vote Not Found")
+                            .build()
+                    );
                 }
 
                 if (!dbUserId.get().equals(dbChallengeSubmissionVoteUserId.get())) {
-                    throw new ForbiddenException("Not allowed to delete on another user's behalf");
+                    throw new ForbiddenException(
+                        Response
+                            .status(Response.Status.FORBIDDEN)
+                            .entity("Not allowed to delete on another user's behalf")
+                            .build()
+                    );
                 }
 
                 return challengeSubmissionVoteRepository.deleteById(id);

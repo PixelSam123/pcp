@@ -34,7 +34,7 @@ public class ChallengeSubmissionCommentRepository {
                         + "u.id, "
                         + "u.name, "
                         + "u.points "
-                        + "FROM challenge_submission_comment csc JOIN user u on csc.user_id = u.id "
+                        + "FROM challenge_submission_comment csc JOIN user u ON csc.user_id = u.id "
                         + "WHERE challenge_submission_id = ?"
                 )
             ) {
@@ -65,28 +65,31 @@ public class ChallengeSubmissionCommentRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Void> persist(ChallengeSubmissionCommentCreateDto challengeSubmissionComment, long userId) {
+    public Uni<Void> persist(
+        ChallengeSubmissionCommentCreateDto challengeSubmissionComment,
+        long userId
+    ) {
         Supplier<Void> dbOperation = Unchecked.supplier(() -> {
-           try (
-               Connection c = dataSource.getConnection();
-               PreparedStatement statement = c.prepareStatement(
-                   "INSERT INTO challenge_submission_comment "
-                       + "(content, user_id, challenge_submission_id) "
-                       + "VALUES (?, ?, ?)"
-               )
-           ) {
-               statement.setString(1, challengeSubmissionComment.content());
-               statement.setLong(2, userId);
-               statement.setLong(3, challengeSubmissionComment.submissionId());
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "INSERT INTO challenge_submission_comment "
+                        + "(content, user_id, challenge_submission_id) "
+                        + "VALUES (?, ?, ?)"
+                )
+            ) {
+                statement.setString(1, challengeSubmissionComment.content());
+                statement.setLong(2, userId);
+                statement.setLong(3, challengeSubmissionComment.submissionId());
 
-               if (statement.executeUpdate() < 1) {
-                   throw new InternalServerErrorException(
-                       "Insertion error: inserted row count is less than 1"
-                   );
-               }
+                if (statement.executeUpdate() < 1) {
+                    throw new InternalServerErrorException(
+                        "Insertion error: inserted row count is less than 1"
+                    );
+                }
 
-               return null;
-           }
+                return null;
+            }
         });
 
         return Uni
