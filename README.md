@@ -1,5 +1,49 @@
 # pcp
 
+Pixel Code Platform  
+Self-hostable coding challenges platform
+
+---
+
+## Frontends
+
+- [PixelSam123/pcp_frontend](https://github.com/PixelSam123/pcp_frontend)
+- [PixelSam123/pcp_frontend_web](https://github.com/PixelSam123/pcp_frontend_web)
+
+## Deployment guide
+
+First, build the app with Gradle:
+
+```
+./gradlew build
+```
+
+You need to run the app with these environment variables, either from the command line or a `.env` file.
+
+```
+QUARKUS_DATASOURCE_DB_KIND=
+QUARKUS_DATASOURCE_JDBC_URL=
+QUARKUS_DATASOURCE_USERNAME=
+QUARKUS_DATASOURCE_PASSWORD=
+
+QUARKUS_HTTP_CORS_ORIGINS=
+
+QUARKUS_REST_CLIENT_CODE_EXEC_SERVER_URL=
+```
+
+- QUARKUS_DATASOURCE_DB_KIND can either be `mysql` or `mariadb`. `src/main/resources/import.sql` is tested on those.
+- `QUARKUS_REST_CLIENT_CODE_EXEC_SERVER_URL` is an instance of either [coxecude](https://github.com/PixelSam123/coxecude) or [containexec](https://github.com/PixelSam123/containexec). You can also create your own code execution server that exposes an API similar to `coxecude`.
+
+Start the app with this command:
+
+```
+java -jar build/(build result file).jar
+```
+
+Original README from Quarkus below.
+
+---
+
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
