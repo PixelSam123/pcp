@@ -1,10 +1,14 @@
 package io.github.pixelsam123.pcp.token;
 
+import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.jwt.build.Jwt;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
@@ -43,24 +47,14 @@ public class TokenResource {
             .findIdAndPasswordHashByName(username)
             .map(Unchecked.function(tuple -> {
                 if (tuple.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Incorrect username")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.BAD_REQUEST, "Incorrect username");
                 }
 
                 long dbUserId = tuple.get().getItem1();
                 String dbUserPasswordHash = tuple.get().getItem2();
 
                 if (!verifyPassword(password, dbUserPasswordHash)) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Incorrect password")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.BAD_REQUEST, "Incorrect password");
                 }
 
                 String token = createToken(Long.toString(dbUserId), username);

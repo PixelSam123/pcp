@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.vote;
 
+import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -44,11 +45,9 @@ public class ChallengeVoteResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUserId -> {
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
@@ -75,20 +74,13 @@ public class ChallengeVoteResource {
                 long dbChallengeVoteCount = tuple.getItem3();
 
                 if (dbChallengeCount == 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge doesn't exist")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.BAD_REQUEST, "Challenge doesn't exist");
                 }
 
                 if (dbChallengeVoteCount > 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User already voted on this challenge")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User already voted on this challenge"
                     );
                 }
 
@@ -106,12 +98,7 @@ public class ChallengeVoteResource {
             .findIdByName(challengeName)
             .map(Unchecked.function(dbChallengeId -> {
                 if (dbChallengeId.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Not Found")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found");
                 }
 
                 return dbChallengeId.get();
@@ -141,29 +128,20 @@ public class ChallengeVoteResource {
                 Optional<Long> dbChallengeVoteUserId = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
                 if (dbChallengeVoteUserId.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Vote Not Found")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Vote Not Found");
                 }
 
                 if (!dbUserId.get().equals(dbChallengeVoteUserId.get())) {
-                    throw new ForbiddenException(
-                        Response
-                            .status(Response.Status.FORBIDDEN)
-                            .entity("Not allowed to delete on another user's behalf")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.FORBIDDEN,
+                        "Not allowed to delete on another user's behalf"
                     );
                 }
 

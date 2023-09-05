@@ -3,6 +3,7 @@ package io.github.pixelsam123.pcp.challenge;
 import io.github.pixelsam123.pcp.CodeExecRequest;
 import io.github.pixelsam123.pcp.CodeExecResponse;
 import io.github.pixelsam123.pcp.CodeExecService;
+import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -67,29 +68,23 @@ public class ChallengeResource {
                 CodeExecResponse codeExec = tuple.getItem3();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
                 if (dbChallengeCount > 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge Already Exists")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "Challenge Already Exists"
                     );
                 }
 
                 if (codeExec.status() != 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Verification code execution error:\n" + codeExec.output())
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "Verification code execution error:\n" + codeExec.output()
                     );
                 }
 
@@ -124,12 +119,7 @@ public class ChallengeResource {
     public Uni<ChallengeDto> getByName(@PathParam("name") String name) {
         return challengeRepository.findByNameDto(name).map(Unchecked.function(dbChallenge -> {
             if (dbChallenge.isEmpty()) {
-                throw new NotFoundException(
-                    Response
-                        .status(Response.Status.NOT_FOUND)
-                        .entity("Challenge not found")
-                        .build()
-                );
+                throw new HttpException(Response.Status.NOT_FOUND, "Challenge not found");
             }
 
             return dbChallenge.get();
@@ -156,29 +146,20 @@ public class ChallengeResource {
                 Optional<Long> dbChallengeUserId = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
                 if (dbChallengeUserId.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Not Found")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found");
                 }
 
                 if (!dbUserId.get().equals(dbChallengeUserId.get())) {
-                    throw new ForbiddenException(
-                        Response
-                            .status(Response.Status.FORBIDDEN)
-                            .entity("Not allowed to delete on another user's behalf")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.FORBIDDEN,
+                        "Not allowed to delete on another user's behalf"
                     );
                 }
 

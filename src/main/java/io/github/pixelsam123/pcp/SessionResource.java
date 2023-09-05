@@ -49,11 +49,9 @@ public class SessionResource {
             .findByNameBrief(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Username of your session is not found")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.NOT_FOUND,
+                        "Username of your session is not found"
                     );
                 }
 

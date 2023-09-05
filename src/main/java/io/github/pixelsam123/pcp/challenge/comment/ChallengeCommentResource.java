@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.comment;
 
+import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -59,21 +60,14 @@ public class ChallengeCommentResource {
                 long dbChallengeCount = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
                 if (dbChallengeCount == 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge doesn't exist")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.BAD_REQUEST, "Challenge doesn't exist");
                 }
 
                 return challengeCommentRepository.persist(challengeCommentToCreate, dbUserId.get());
@@ -90,12 +84,7 @@ public class ChallengeCommentResource {
             .findIdByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Not Found")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found");
                 }
 
                 return dbChallenge.get();

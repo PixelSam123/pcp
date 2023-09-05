@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.submission.vote;
 
+import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -48,11 +49,9 @@ public class ChallengeSubmissionVoteResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
@@ -83,20 +82,16 @@ public class ChallengeSubmissionVoteResource {
                 long dbChallengeSubmissionVoteCount = tuple.getItem3();
 
                 if (dbChallengeSubmissionCount == 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Submission doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "Submission doesn't exist"
                     );
                 }
 
                 if (dbChallengeSubmissionVoteCount > 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User already voted on this submission")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User already voted on this submission"
                     );
                 }
 
@@ -137,29 +132,20 @@ public class ChallengeSubmissionVoteResource {
                 Optional<Long> dbChallengeSubmissionVoteUserId = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
                 if (dbChallengeSubmissionVoteUserId.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Submission Vote Not Found")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.NOT_FOUND, "Submission Vote Not Found");
                 }
 
                 if (!dbUserId.get().equals(dbChallengeSubmissionVoteUserId.get())) {
-                    throw new ForbiddenException(
-                        Response
-                            .status(Response.Status.FORBIDDEN)
-                            .entity("Not allowed to delete on another user's behalf")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.FORBIDDEN,
+                        "Not allowed to delete on another user's behalf"
                     );
                 }
 

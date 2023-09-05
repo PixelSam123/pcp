@@ -3,6 +3,7 @@ package io.github.pixelsam123.pcp.challenge.submission;
 import io.github.pixelsam123.pcp.CodeExecRequest;
 import io.github.pixelsam123.pcp.CodeExecResponse;
 import io.github.pixelsam123.pcp.CodeExecService;
+import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -55,11 +56,9 @@ public class ChallengeSubmissionResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(Unchecked.function(dbUser -> {
                 if (dbUser.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
@@ -71,11 +70,9 @@ public class ChallengeSubmissionResource {
                 .findTierAndTestCaseById(challengeSubmissionToCreate.challengeId())
                 .map(Unchecked.function(tuple -> {
                     if (tuple.isEmpty()) {
-                        throw new BadRequestException(
-                            Response
-                                .status(Response.Status.BAD_REQUEST)
-                                .entity("Challenge doesn't exist")
-                                .build()
+                        throw new HttpException(
+                            Response.Status.BAD_REQUEST,
+                            "Challenge doesn't exist"
                         );
                     }
 
@@ -111,11 +108,9 @@ public class ChallengeSubmissionResource {
                 CodeExecResponse codeExec = tuple.getItem4();
 
                 if (codeExec.status() != 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Submission code execution error:\n" + codeExec.output())
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "Submission code execution error:\n" + codeExec.output()
                     );
                 }
 
@@ -158,12 +153,7 @@ public class ChallengeSubmissionResource {
             .findIdByName(challengeName)
             .map(Unchecked.function(dbChallenge -> {
                 if (dbChallenge.isEmpty()) {
-                    throw new NotFoundException(
-                        Response
-                            .status(Response.Status.NOT_FOUND)
-                            .entity("Challenge Not Found")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found");
                 }
 
                 return dbChallenge.get();

@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.submission.comment;
 
+import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -61,20 +62,16 @@ public class ChallengeSubmissionCommentResource {
                 long dbChallengeSubmissionCount = tuple.getItem2();
 
                 if (dbUserId.isEmpty()) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User of your credentials doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "User of your credentials doesn't exist"
                     );
                 }
 
                 if (dbChallengeSubmissionCount == 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Challenge submission doesn't exist")
-                            .build()
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "Challenge submission doesn't exist"
                     );
                 }
 

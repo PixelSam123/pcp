@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.user;
 
+import io.github.pixelsam123.pcp.HttpException;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.transaction.Transactional;
@@ -33,12 +34,7 @@ public class UserResource {
             .countByName(userToCreate.name())
             .flatMap(Unchecked.function(dbUserCount -> {
                 if (dbUserCount > 0) {
-                    throw new BadRequestException(
-                        Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("User already exists")
-                            .build()
-                    );
+                    throw new HttpException(Response.Status.BAD_REQUEST, "User already exists");
                 }
 
                 return userRepository.persist(
@@ -60,12 +56,7 @@ public class UserResource {
     public Uni<UserBriefDto> getByName(@PathParam("name") String name) {
         return userRepository.findByNameBrief(name).map(Unchecked.function(dbUser -> {
             if (dbUser.isEmpty()) {
-                throw new NotFoundException(
-                    Response
-                        .status(Response.Status.NOT_FOUND)
-                        .entity("User not found")
-                        .build()
-                );
+                throw new HttpException(Response.Status.NOT_FOUND, "User not found");
             }
 
             return dbUser.get();
