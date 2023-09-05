@@ -37,7 +37,7 @@ public class ChallengeVoteResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<Void> createChallengeVote(
+    public Uni<Void> create(
         ChallengeVoteCreateDto challengeVoteToCreate, @Context SecurityContext ctx
     ) {
         Uni<Long> userIdRetrieval = userRepository
@@ -99,7 +99,7 @@ public class ChallengeVoteResource {
     @GET
     @Path("/{challenge_name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeVoteDto>> getChallengeVotesByChallengeName(
+    public Uni<List<ChallengeVoteDto>> getListByChallengeName(
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
@@ -124,7 +124,7 @@ public class ChallengeVoteResource {
     @RolesAllowed({"User"})
     @Path("/{id}")
     @Transactional
-    public Uni<Void> deleteChallengeVote(@PathParam("id") long id, @Context SecurityContext ctx) {
+    public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Optional<Long>> userIdRetrieval =
             userRepository.findIdByName(ctx.getUserPrincipal().getName());
 

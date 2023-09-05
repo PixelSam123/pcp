@@ -41,7 +41,7 @@ public class ChallengeResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<Void> createChallenge(
+    public Uni<Void> create(
         ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx
     ) {
         Uni<Optional<Long>> userIdRetrieval =
@@ -99,7 +99,7 @@ public class ChallengeResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeBriefDto>> getChallenges(
+    public Uni<List<ChallengeBriefDto>> getList(
         @QueryParam("tiers") String tiers,
         @QueryParam("username") String username,
         @QueryParam("sortBy") String sortBy
@@ -121,7 +121,7 @@ public class ChallengeResource {
     @GET
     @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<ChallengeDto> getChallengeByName(@PathParam("name") String name) {
+    public Uni<ChallengeDto> getByName(@PathParam("name") String name) {
         return challengeRepository.findByNameDto(name).map(Unchecked.function(dbChallenge -> {
             if (dbChallenge.isEmpty()) {
                 throw new NotFoundException(
@@ -140,7 +140,7 @@ public class ChallengeResource {
     @RolesAllowed({"User"})
     @Path("/{id}")
     @Transactional
-    public Uni<Void> deleteChallenge(@PathParam("id") long id, @Context SecurityContext ctx) {
+    public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Optional<Long>> userIdRetrieval =
             userRepository.findIdByName(ctx.getUserPrincipal().getName());
 

@@ -28,7 +28,7 @@ public class UserResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<Void> createUser(UserCreateDto userToCreate) {
+    public Uni<Void> create(UserCreateDto userToCreate) {
         return userRepository
             .countByName(userToCreate.name())
             .flatMap(Unchecked.function(dbUserCount -> {
@@ -50,14 +50,14 @@ public class UserResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<UserBriefDto>> getUsers() {
+    public Uni<List<UserBriefDto>> getList() {
         return userRepository.listAllBrief();
     }
 
     @GET
     @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<UserBriefDto> getUserByName(@PathParam("name") String name) {
+    public Uni<UserBriefDto> getByName(@PathParam("name") String name) {
         return userRepository.findByNameBrief(name).map(Unchecked.function(dbUser -> {
             if (dbUser.isEmpty()) {
                 throw new NotFoundException(

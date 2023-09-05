@@ -40,7 +40,7 @@ public class ChallengeSubmissionCommentResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<Void> createChallengeSubmissionComment(
+    public Uni<Void> create(
         ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,
         @Context SecurityContext ctx
     ) {
@@ -88,7 +88,7 @@ public class ChallengeSubmissionCommentResource {
     @GET
     @Path("/{challenge_submission_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionCommentDto>> getChallengeSubmissionCommentsByChallengeSubmissionId(
+    public Uni<List<ChallengeSubmissionCommentDto>> getListByChallengeSubmissionId(
         @PathParam("challenge_submission_id") long challengeSubmissionId
     ) {
         return challengeSubmissionCommentRepository.listByChallengeSubmissionId(

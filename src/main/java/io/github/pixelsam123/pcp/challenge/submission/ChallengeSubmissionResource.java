@@ -47,7 +47,7 @@ public class ChallengeSubmissionResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<Void> createChallengeSubmission(
+    public Uni<Void> create(
         ChallengeSubmissionCreateDto challengeSubmissionToCreate,
         @Context SecurityContext ctx
     ) {
@@ -151,7 +151,7 @@ public class ChallengeSubmissionResource {
     @GET
     @Path("/{challenge_name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionDto>> getChallengeSubmissionsByChallengeName(
+    public Uni<List<ChallengeSubmissionDto>> getListByChallengeName(
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository

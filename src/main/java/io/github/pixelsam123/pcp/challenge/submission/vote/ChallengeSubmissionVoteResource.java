@@ -40,7 +40,7 @@ public class ChallengeSubmissionVoteResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public Uni<Void> createChallengeSubmissionVote(
+    public Uni<Void> create(
         ChallengeSubmissionVoteCreateDto challengeSubmissionVoteToCreate,
         @Context SecurityContext ctx
     ) {
@@ -110,7 +110,7 @@ public class ChallengeSubmissionVoteResource {
     @GET
     @Path("/{submission_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionVoteDto>> getChallengeSubmissionVotesBySubmissionId(
+    public Uni<List<ChallengeSubmissionVoteDto>> getListBySubmissionId(
         @PathParam("submission_id") long submissionId
     ) {
         return challengeSubmissionVoteRepository.listByChallengeSubmissionId(submissionId);
@@ -120,7 +120,7 @@ public class ChallengeSubmissionVoteResource {
     @RolesAllowed({"User"})
     @Path("/{id}")
     @Transactional
-    public Uni<Void> deleteSubmissionVote(@PathParam("id") long id, @Context SecurityContext ctx) {
+    public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Optional<Long>> userIdRetrieval =
             userRepository.findIdByName(ctx.getUserPrincipal().getName());
 
