@@ -1,8 +1,8 @@
 package io.github.pixelsam123.pcp.challenge;
 
-import io.github.pixelsam123.pcp.CodeExecRequest;
-import io.github.pixelsam123.pcp.CodeExecResponse;
-import io.github.pixelsam123.pcp.CodeExecService;
+import io.github.pixelsam123.pcp.code.exec.CodeExecRequest;
+import io.github.pixelsam123.pcp.code.exec.CodeExecResponse;
+import io.github.pixelsam123.pcp.code.exec.CodeExecService;
 import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;

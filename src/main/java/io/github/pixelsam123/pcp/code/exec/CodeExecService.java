@@ -1,4 +1,4 @@
-package io.github.pixelsam123.pcp;
+package io.github.pixelsam123.pcp.code.exec;
 
 import io.smallrye.mutiny.Uni;
 import jakarta.ws.rs.Consumes;
