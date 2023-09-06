@@ -54,30 +54,16 @@ public class ChallengeSubmissionResource {
     ) {
         Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
-            .map(Unchecked.function(dbUser -> {
-                if (dbUser.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
+            .map(dbUser -> dbUser.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
 
-                return dbUser.get();
-            }));
-
-        Uni<Tuple2<Integer, String>> challengeTierAndTestCaseRetrieval =
-            challengeRepository
-                .findTierAndTestCaseById(challengeSubmissionToCreate.challengeId())
-                .map(Unchecked.function(tuple -> {
-                    if (tuple.isEmpty()) {
-                        throw new HttpException(
-                            Response.Status.BAD_REQUEST,
-                            "Challenge doesn't exist"
-                        );
-                    }
-
-                    return tuple.get();
-                }));
+        Uni<Tuple2<Integer, String>> challengeTierAndTestCaseRetrieval = challengeRepository
+            .findTierAndTestCaseById(challengeSubmissionToCreate.challengeId())
+            .map(challengeTierAndTestCase -> challengeTierAndTestCase.orElseThrow(
+                () -> new HttpException(Response.Status.BAD_REQUEST, "Challenge doesn't exist")
+            ));
 
         Uni<Long> challengeSubmissionCountRetrieval = userIdRetrieval.flatMap(
             dbUserId -> challengeSubmissionRepository.countByChallengeIdAndUserId(
@@ -151,13 +137,9 @@ public class ChallengeSubmissionResource {
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)
-            .map(Unchecked.function(dbChallenge -> {
-                if (dbChallenge.isEmpty()) {
-                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found");
-                }
-
-                return dbChallenge.get();
-            }));
+            .map(dbChallengeId -> dbChallengeId.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+            ));
 
         return challengeIdRetrieval.flatMap(challengeSubmissionRepository::listByChallengeId);
     }

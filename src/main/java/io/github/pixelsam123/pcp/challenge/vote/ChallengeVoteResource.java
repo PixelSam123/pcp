@@ -15,7 +15,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
-import java.util.Optional;
 
 @Tag(name = "challenge_votes", description = "Challenge vote creation, viewing and editing")
 @Path("/challenge_votes")
@@ -43,16 +42,10 @@ public class ChallengeVoteResource {
     ) {
         Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
-            .map(Unchecked.function(dbUserId -> {
-                if (dbUserId.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
-
-                return dbUserId.get();
-            }));
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
 
         Uni<Long> challengeCountRetrieval =
             challengeRepository.countById(challengeVoteToCreate.challengeId());
@@ -96,13 +89,9 @@ public class ChallengeVoteResource {
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)
-            .map(Unchecked.function(dbChallengeId -> {
-                if (dbChallengeId.isEmpty()) {
-                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found");
-                }
-
-                return dbChallengeId.get();
-            }));
+            .map(dbChallengeId -> dbChallengeId.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+            ));
 
         return challengeIdRetrieval.flatMap(challengeVoteRepository::listByChallengeId);
     }
@@ -112,11 +101,18 @@ public class ChallengeVoteResource {
     @Path("/{id}")
     @Transactional
     public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
-        Uni<Optional<Long>> userIdRetrieval =
-            userRepository.findIdByName(ctx.getUserPrincipal().getName());
+        Uni<Long> userIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
 
-        Uni<Optional<Long>> challengeVoteUserIdRetrieval =
-            challengeVoteRepository.findUserIdById(id);
+        Uni<Long> challengeVoteUserIdRetrieval = challengeVoteRepository
+            .findUserIdById(id)
+            .map(dbChallengeVoteUserId -> dbChallengeVoteUserId.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Vote Not Found")
+            ));
 
         return Uni
             .combine()
@@ -124,21 +120,10 @@ public class ChallengeVoteResource {
             .unis(userIdRetrieval, challengeVoteUserIdRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<Long> dbUserId = tuple.getItem1();
-                Optional<Long> dbChallengeVoteUserId = tuple.getItem2();
+                long dbUserId = tuple.getItem1();
+                long dbChallengeVoteUserId = tuple.getItem2();
 
-                if (dbUserId.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
-
-                if (dbChallengeVoteUserId.isEmpty()) {
-                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Vote Not Found");
-                }
-
-                if (!dbUserId.get().equals(dbChallengeVoteUserId.get())) {
+                if (dbUserId != dbChallengeVoteUserId) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
                         "Not allowed to delete on another user's behalf"

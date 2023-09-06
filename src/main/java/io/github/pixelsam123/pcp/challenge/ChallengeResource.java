@@ -19,7 +19,6 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Tag(name = "challenges", description = "Challenge creation, viewing and editing")
 @Path("/challenges")
@@ -45,17 +44,22 @@ public class ChallengeResource {
     public Uni<Void> create(
         ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx
     ) {
-        Uni<Optional<Long>> userIdRetrieval =
-            userRepository.findIdByName(ctx.getUserPrincipal().getName());
+        Uni<Long> userIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
 
         Uni<Long> challengeCountRetrieval =
             challengeRepository.countByName(challengeToCreate.name());
 
-        Uni<CodeExecResponse> codeExecRetrieval =
-            codeExecService.getCodeExecResult(new CodeExecRequest(
+        Uni<CodeExecResponse> codeExecRetrieval = codeExecService.getCodeExecResult(
+            new CodeExecRequest(
                 "js",
                 challengeToCreate.codeForVerification() + '\n' + challengeToCreate.testCase()
-            ));
+            )
+        );
 
         return Uni
             .combine()
@@ -63,16 +67,9 @@ public class ChallengeResource {
             .unis(userIdRetrieval, challengeCountRetrieval, codeExecRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<Long> dbUserId = tuple.getItem1();
+                long dbUserId = tuple.getItem1();
                 long dbChallengeCount = tuple.getItem2();
                 CodeExecResponse codeExec = tuple.getItem3();
-
-                if (dbUserId.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
 
                 if (dbChallengeCount > 0) {
                     throw new HttpException(
@@ -88,7 +85,7 @@ public class ChallengeResource {
                     );
                 }
 
-                return challengeRepository.persist(challengeToCreate, dbUserId.get());
+                return challengeRepository.persist(challengeToCreate, dbUserId);
             }));
     }
 
@@ -117,13 +114,11 @@ public class ChallengeResource {
     @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<ChallengeDto> getByName(@PathParam("name") String name) {
-        return challengeRepository.findByNameDto(name).map(Unchecked.function(dbChallenge -> {
-            if (dbChallenge.isEmpty()) {
-                throw new HttpException(Response.Status.NOT_FOUND, "Challenge not found");
-            }
-
-            return dbChallenge.get();
-        }));
+        return challengeRepository
+            .findByNameDto(name)
+            .map(dbChallenge -> dbChallenge.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge not found")
+            ));
     }
 
     @DELETE
@@ -131,10 +126,18 @@ public class ChallengeResource {
     @Path("/{id}")
     @Transactional
     public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
-        Uni<Optional<Long>> userIdRetrieval =
-            userRepository.findIdByName(ctx.getUserPrincipal().getName());
+        Uni<Long> userIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
 
-        Uni<Optional<Long>> challengeUserIdRetrieval = challengeRepository.findUserIdById(id);
+        Uni<Long> challengeUserIdRetrieval = challengeRepository
+            .findUserIdById(id)
+            .map(dbChallengeUserId -> dbChallengeUserId.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+            ));
 
         return Uni
             .combine()
@@ -142,21 +145,10 @@ public class ChallengeResource {
             .unis(userIdRetrieval, challengeUserIdRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<Long> dbUserId = tuple.getItem1();
-                Optional<Long> dbChallengeUserId = tuple.getItem2();
+                long dbUserId = tuple.getItem1();
+                long dbChallengeUserId = tuple.getItem2();
 
-                if (dbUserId.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
-
-                if (dbChallengeUserId.isEmpty()) {
-                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found");
-                }
-
-                if (!dbUserId.get().equals(dbChallengeUserId.get())) {
+                if (dbUserId != dbChallengeUserId) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
                         "Not allowed to delete on another user's behalf"

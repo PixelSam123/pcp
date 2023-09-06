@@ -8,7 +8,6 @@ import io.github.pixelsam123.pcp.challenge.vote.ChallengeVoteRepository;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
@@ -47,16 +46,10 @@ public class SessionResource {
     public Uni<UserBriefDto> sessionUser(@Context SecurityContext ctx) {
         return userRepository
             .findByNameBrief(ctx.getUserPrincipal().getName())
-            .map(Unchecked.function(dbUser -> {
-                if (dbUser.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.NOT_FOUND,
-                        "Username of your session is not found"
-                    );
-                }
-
-                return dbUser.get();
-            }));
+            .map(dbUser -> dbUser.orElseThrow(() -> new HttpException(
+                Response.Status.NOT_FOUND,
+                "Username of your session is not found"
+            )));
     }
 
     @GET

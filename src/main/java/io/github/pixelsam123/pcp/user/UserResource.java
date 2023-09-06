@@ -54,12 +54,10 @@ public class UserResource {
     @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<UserBriefDto> getByName(@PathParam("name") String name) {
-        return userRepository.findByNameBrief(name).map(Unchecked.function(dbUser -> {
-            if (dbUser.isEmpty()) {
-                throw new HttpException(Response.Status.NOT_FOUND, "User not found");
-            }
-
-            return dbUser.get();
-        }));
+        return userRepository
+            .findByNameBrief(name)
+            .map(dbUser -> dbUser.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "User not found")
+            ));
     }
 }

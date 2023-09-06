@@ -15,7 +15,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
-import java.util.Optional;
 
 @Tag(
     name = "challenge_comments",
@@ -44,8 +43,12 @@ public class ChallengeCommentResource {
     public Uni<Void> create(
         ChallengeCommentCreateDto challengeCommentToCreate, @Context SecurityContext ctx
     ) {
-        Uni<Optional<Long>> dbUserIdRetrieval =
-            userRepository.findIdByName(ctx.getUserPrincipal().getName());
+        Uni<Long> dbUserIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
 
         Uni<Long> challengeCountRetrieval =
             challengeRepository.countById(challengeCommentToCreate.challengeId());
@@ -56,21 +59,14 @@ public class ChallengeCommentResource {
             .unis(dbUserIdRetrieval, challengeCountRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<Long> dbUserId = tuple.getItem1();
+                long dbUserId = tuple.getItem1();
                 long dbChallengeCount = tuple.getItem2();
-
-                if (dbUserId.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
 
                 if (dbChallengeCount == 0) {
                     throw new HttpException(Response.Status.BAD_REQUEST, "Challenge doesn't exist");
                 }
 
-                return challengeCommentRepository.persist(challengeCommentToCreate, dbUserId.get());
+                return challengeCommentRepository.persist(challengeCommentToCreate, dbUserId);
             }));
     }
 
@@ -82,13 +78,9 @@ public class ChallengeCommentResource {
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)
-            .map(Unchecked.function(dbChallenge -> {
-                if (dbChallenge.isEmpty()) {
-                    throw new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found");
-                }
-
-                return dbChallenge.get();
-            }));
+            .map(dbChallenge -> dbChallenge.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+            ));
 
         return challengeIdRetrieval.flatMap(challengeCommentRepository::listByChallengeId);
     }

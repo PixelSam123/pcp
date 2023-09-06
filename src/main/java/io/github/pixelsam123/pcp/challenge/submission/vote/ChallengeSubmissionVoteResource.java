@@ -15,7 +15,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
-import java.util.Optional;
 
 @Tag(
     name = "challenge_submission_votes",
@@ -47,16 +46,10 @@ public class ChallengeSubmissionVoteResource {
     ) {
         Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
-            .map(Unchecked.function(dbUser -> {
-                if (dbUser.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
-
-                return dbUser.get();
-            }));
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
 
         Uni<Long> challengeSubmissionCountRetrieval =
             challengeSubmissionRepository.countById(challengeSubmissionVoteToCreate.submissionId());
@@ -116,11 +109,19 @@ public class ChallengeSubmissionVoteResource {
     @Path("/{id}")
     @Transactional
     public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
-        Uni<Optional<Long>> userIdRetrieval =
-            userRepository.findIdByName(ctx.getUserPrincipal().getName());
+        Uni<Long> userIdRetrieval =
+            userRepository
+                .findIdByName(ctx.getUserPrincipal().getName())
+                .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                    Response.Status.BAD_REQUEST,
+                    "User of your credentials doesn't exist"
+                )));
 
-        Uni<Optional<Long>> challengeSubmissionVoteUserIdRetrieval =
-            challengeSubmissionVoteRepository.findUserIdById(id);
+        Uni<Long> challengeSubmissionVoteUserIdRetrieval = challengeSubmissionVoteRepository
+            .findUserIdById(id)
+            .map(dbChallengeSubmissionVoteUserId -> dbChallengeSubmissionVoteUserId.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "Submission Vote Not Found")
+            ));
 
         return Uni
             .combine()
@@ -128,21 +129,10 @@ public class ChallengeSubmissionVoteResource {
             .unis(userIdRetrieval, challengeSubmissionVoteUserIdRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<Long> dbUserId = tuple.getItem1();
-                Optional<Long> dbChallengeSubmissionVoteUserId = tuple.getItem2();
+                long dbUserId = tuple.getItem1();
+                long dbChallengeSubmissionVoteUserId = tuple.getItem2();
 
-                if (dbUserId.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
-
-                if (dbChallengeSubmissionVoteUserId.isEmpty()) {
-                    throw new HttpException(Response.Status.NOT_FOUND, "Submission Vote Not Found");
-                }
-
-                if (!dbUserId.get().equals(dbChallengeSubmissionVoteUserId.get())) {
+                if (dbUserId != dbChallengeSubmissionVoteUserId) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
                         "Not allowed to delete on another user's behalf"

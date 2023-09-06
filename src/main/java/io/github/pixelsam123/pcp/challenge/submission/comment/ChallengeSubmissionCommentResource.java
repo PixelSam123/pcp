@@ -15,7 +15,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
-import java.util.Optional;
 
 @Tag(
     name = "challenge_submission_comments",
@@ -45,8 +44,12 @@ public class ChallengeSubmissionCommentResource {
         ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,
         @Context SecurityContext ctx
     ) {
-        Uni<Optional<Long>> userIdRetrieval =
-            userRepository.findIdByName(ctx.getUserPrincipal().getName());
+        Uni<Long> userIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
 
         Uni<Long> challengeSubmissionCountRetrieval = challengeSubmissionRepository.countById(
             challengeSubmissionCommentToCreate.submissionId()
@@ -58,15 +61,8 @@ public class ChallengeSubmissionCommentResource {
             .unis(userIdRetrieval, challengeSubmissionCountRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Optional<Long> dbUserId = tuple.getItem1();
+                long dbUserId = tuple.getItem1();
                 long dbChallengeSubmissionCount = tuple.getItem2();
-
-                if (dbUserId.isEmpty()) {
-                    throw new HttpException(
-                        Response.Status.BAD_REQUEST,
-                        "User of your credentials doesn't exist"
-                    );
-                }
 
                 if (dbChallengeSubmissionCount == 0) {
                     throw new HttpException(
@@ -77,7 +73,7 @@ public class ChallengeSubmissionCommentResource {
 
                 return challengeSubmissionCommentRepository.persist(
                     challengeSubmissionCommentToCreate,
-                    dbUserId.get()
+                    dbUserId
                 );
             }));
     }
