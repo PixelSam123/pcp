@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.challenge;
 
+import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.code.exec.CodeExecRequest;
 import io.github.pixelsam123.pcp.code.exec.CodeExecResponse;
 import io.github.pixelsam123.pcp.code.exec.CodeExecService;
@@ -146,11 +147,9 @@ public class ChallengeResource {
             .all()
             .unis(userIdRetrieval, challengeUserIdRetrieval)
             .asTuple()
-            .flatMap(Unchecked.function(tuple -> {
-                long dbUserId = tuple.getItem1();
-                long dbChallengeUserId = tuple.getItem2();
-
-                if (dbUserId != dbChallengeUserId) {
+            .map(Utils::areItemsEqual)
+            .flatMap(Unchecked.function(areIdsEqual -> {
+                if (!areIdsEqual) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
                         "Not allowed to delete on another user's behalf"

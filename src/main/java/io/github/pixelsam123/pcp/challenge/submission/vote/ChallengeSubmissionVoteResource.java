@@ -1,6 +1,7 @@
 package io.github.pixelsam123.pcp.challenge.submission.vote;
 
 import io.github.pixelsam123.pcp.HttpException;
+import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -130,11 +131,9 @@ public class ChallengeSubmissionVoteResource {
             .all()
             .unis(userIdRetrieval, challengeSubmissionVoteUserIdRetrieval)
             .asTuple()
-            .flatMap(Unchecked.function(tuple -> {
-                long dbUserId = tuple.getItem1();
-                long dbChallengeSubmissionVoteUserId = tuple.getItem2();
-
-                if (dbUserId != dbChallengeSubmissionVoteUserId) {
+            .map(Utils::areItemsEqual)
+            .flatMap(Unchecked.function(areIdsEqual -> {
+                if (!areIdsEqual) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
                         "Not allowed to delete on another user's behalf"
