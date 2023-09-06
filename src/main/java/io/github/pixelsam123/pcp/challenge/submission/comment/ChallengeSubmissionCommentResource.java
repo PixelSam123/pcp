@@ -39,6 +39,7 @@ public class ChallengeSubmissionCommentResource {
     @POST
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.WILDCARD)
     @Transactional
     public Uni<Void> create(
         ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,

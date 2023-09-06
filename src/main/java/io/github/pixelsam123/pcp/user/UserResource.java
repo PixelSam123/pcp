@@ -28,6 +28,7 @@ public class UserResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.WILDCARD)
     @Transactional
     public Uni<Void> create(UserCreateDto userToCreate) {
         return userRepository
