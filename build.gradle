@@ -19,7 +19,6 @@ dependencies {
     implementation 'io.quarkus:quarkus-jdbc-mariadb'
     implementation 'io.quarkus:quarkus-jdbc-mysql'
     implementation 'io.quarkus:quarkus-agroal'
-    implementation 'io.quarkus:quarkus-narayana-jta'
     implementation 'io.quarkus:quarkus-smallrye-jwt'
     implementation 'org.springframework.security:spring-security-crypto:6.1.2'
     implementation 'org.bouncycastle:bcprov-jdk18on:1.76'
