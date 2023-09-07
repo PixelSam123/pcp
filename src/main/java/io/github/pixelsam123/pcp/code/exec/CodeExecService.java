@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @Path("/")
-@RegisterRestClient(configKey = "code_exec_server")
+@RegisterRestClient(configKey = "code-exec-server")
 public interface CodeExecService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
