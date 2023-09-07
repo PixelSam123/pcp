@@ -1,19 +1,16 @@
--- This file allow to write SQL commands that will be emitted in test and dev.
--- The commands are commented as their support depends of the database
--- insert into myentity (id, field) values(1, 'field-1');
--- insert into myentity (id, field) values(2, 'field-2');
--- insert into myentity (id, field) values(3, 'field-3');
--- alter sequence myentity_seq restart with 4;
+-- liquibase formatted sql
 
-CREATE TABLE IF NOT EXISTS user
+-- changeset pixelsam123:1
+-- comment: initial tables creation
+CREATE TABLE user
 (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT,
     name          VARCHAR(255) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    points        INT          DEFAULT 0
+    points        INT DEFAULT 0
 );
 
-CREATE TABLE IF NOT EXISTS challenge
+CREATE TABLE challenge
 (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT,
     timestamp       TIMESTAMP DEFAULT NOW(),
@@ -22,13 +19,13 @@ CREATE TABLE IF NOT EXISTS challenge
     initial_code    VARCHAR(255) NOT NULL,
     test_case       VARCHAR(255) NOT NULL,
     tier            INT          NOT NULL,
-    completed_count INT DEFAULT 0,
+    completed_count INT       DEFAULT 0,
     user_id         BIGINT,
     CONSTRAINT fk_user_challenge
         FOREIGN KEY (user_id) REFERENCES user (id)
 );
 
-CREATE TABLE IF NOT EXISTS challenge_comment
+CREATE TABLE challenge_comment
 (
     id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     content      VARCHAR(255) NOT NULL,
@@ -40,7 +37,7 @@ CREATE TABLE IF NOT EXISTS challenge_comment
         FOREIGN KEY (challenge_id) REFERENCES challenge (id)
 );
 
-CREATE TABLE IF NOT EXISTS challenge_vote
+CREATE TABLE challenge_vote
 (
     id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     is_upvote    BOOL NOT NULL,
@@ -52,7 +49,7 @@ CREATE TABLE IF NOT EXISTS challenge_vote
         FOREIGN KEY (challenge_id) REFERENCES challenge (id)
 );
 
-CREATE TABLE IF NOT EXISTS challenge_submission
+CREATE TABLE challenge_submission
 (
     id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     code         VARCHAR(255) NOT NULL,
@@ -64,7 +61,7 @@ CREATE TABLE IF NOT EXISTS challenge_submission
         FOREIGN KEY (challenge_id) REFERENCES challenge (id)
 );
 
-CREATE TABLE IF NOT EXISTS challenge_submission_comment
+CREATE TABLE challenge_submission_comment
 (
     id                      BIGINT PRIMARY KEY AUTO_INCREMENT,
     content                 VARCHAR(255) NOT NULL,
@@ -76,7 +73,7 @@ CREATE TABLE IF NOT EXISTS challenge_submission_comment
         FOREIGN KEY (challenge_submission_id) REFERENCES challenge_submission (id)
 );
 
-CREATE TABLE IF NOT EXISTS challenge_submission_vote
+CREATE TABLE challenge_submission_vote
 (
     id                      BIGINT PRIMARY KEY AUTO_INCREMENT,
     is_upvote               BOOL NOT NULL,
