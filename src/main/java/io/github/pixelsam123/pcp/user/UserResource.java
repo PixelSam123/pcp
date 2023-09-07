@@ -3,7 +3,6 @@ package io.github.pixelsam123.pcp.user;
 import io.github.pixelsam123.pcp.HttpException;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -29,7 +28,6 @@ public class UserResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.WILDCARD)
-    @Transactional
     public Uni<Void> create(UserCreateDto userToCreate) {
         return userRepository
             .countByName(userToCreate.name())

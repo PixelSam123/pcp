@@ -6,7 +6,6 @@ import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -40,7 +39,6 @@ public class ChallengeSubmissionCommentResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.WILDCARD)
-    @Transactional
     public Uni<Void> create(
         ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,
         @Context SecurityContext ctx
