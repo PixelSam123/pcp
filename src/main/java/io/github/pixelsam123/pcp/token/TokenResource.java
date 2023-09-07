@@ -26,17 +26,18 @@ public class TokenResource {
     private final String cookieName;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final UserRepository userRepository;
-
-    private final int tokenMinutesDuration = 60;
+    private final int tokenMinutesDuration;
 
     public TokenResource(
         @ConfigProperty(name = "mp.jwt.token.cookie") String cookieName,
         Argon2PasswordEncoder argon2PasswordEncoder,
-        UserRepository userRepository
+        UserRepository userRepository,
+        @ConfigProperty(name = "token-minutes-duration") int tokenMinutesDuration
     ) {
         this.cookieName = cookieName;
         this.argon2PasswordEncoder = argon2PasswordEncoder;
         this.userRepository = userRepository;
+        this.tokenMinutesDuration = tokenMinutesDuration;
     }
 
     @POST
