@@ -39,7 +39,7 @@ public class ChallengeSubmissionVoteResource {
     @POST
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> create(
         ChallengeSubmissionVoteCreateDto challengeSubmissionVoteToCreate,
         @Context SecurityContext ctx
@@ -107,7 +107,7 @@ public class ChallengeSubmissionVoteResource {
     @DELETE
     @RolesAllowed({"User"})
     @Path("/{id}")
-    @Produces(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Long> userIdRetrieval =
             userRepository

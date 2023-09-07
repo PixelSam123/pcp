@@ -40,7 +40,7 @@ public class ChallengeResource {
     @POST
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> create(
         ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx
     ) {
@@ -124,7 +124,7 @@ public class ChallengeResource {
     @DELETE
     @RolesAllowed({"User"})
     @Path("/{id}")
-    @Produces(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
         Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())

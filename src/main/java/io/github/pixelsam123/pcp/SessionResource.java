@@ -94,8 +94,8 @@ public class SessionResource {
     @POST
     @Path("/logout")
     @RolesAllowed({"User"})
-    @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.WILDCARD)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> sessionLogout() {
         return Uni
             .createFrom()
