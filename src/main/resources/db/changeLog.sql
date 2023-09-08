@@ -20,7 +20,7 @@ CREATE TABLE challenge
     test_case       VARCHAR(255) NOT NULL,
     tier            INT          NOT NULL,
     completed_count INT       DEFAULT 0,
-    user_id         BIGINT,
+    user_id         BIGINT       NOT NULL,
     CONSTRAINT fk__challenge__user
         FOREIGN KEY (user_id) REFERENCES user (id)
 );
@@ -29,8 +29,8 @@ CREATE TABLE challenge_comment
 (
     id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     content      VARCHAR(255) NOT NULL,
-    user_id      BIGINT,
-    challenge_id BIGINT,
+    user_id      BIGINT       NOT NULL,
+    challenge_id BIGINT       NOT NULL,
     CONSTRAINT fk__challenge_comment__user
         FOREIGN KEY (user_id) REFERENCES user (id),
     CONSTRAINT fk__challenge_comment__challenge
@@ -40,9 +40,9 @@ CREATE TABLE challenge_comment
 CREATE TABLE challenge_vote
 (
     id           BIGINT PRIMARY KEY AUTO_INCREMENT,
-    is_upvote    BOOL NOT NULL,
-    user_id      BIGINT,
-    challenge_id BIGINT,
+    is_upvote    BOOL   NOT NULL,
+    user_id      BIGINT NOT NULL,
+    challenge_id BIGINT NOT NULL,
     CONSTRAINT fk__challenge_vote__user
         FOREIGN KEY (user_id) REFERENCES user (id),
     CONSTRAINT fk__challenge_vote__challenge
@@ -53,8 +53,8 @@ CREATE TABLE challenge_submission
 (
     id           BIGINT PRIMARY KEY AUTO_INCREMENT,
     code         VARCHAR(255) NOT NULL,
-    user_id      BIGINT,
-    challenge_id BIGINT,
+    user_id      BIGINT       NOT NULL,
+    challenge_id BIGINT       NOT NULL,
     CONSTRAINT fk__challenge_submission__user
         FOREIGN KEY (user_id) REFERENCES user (id),
     CONSTRAINT fk__challenge_submission__challenge
@@ -65,8 +65,8 @@ CREATE TABLE challenge_submission_comment
 (
     id                      BIGINT PRIMARY KEY AUTO_INCREMENT,
     content                 VARCHAR(255) NOT NULL,
-    user_id                 BIGINT,
-    challenge_submission_id BIGINT,
+    user_id                 BIGINT       NOT NULL,
+    challenge_submission_id BIGINT       NOT NULL,
     CONSTRAINT fk__challenge_submission_comment__user
         FOREIGN KEY (user_id) REFERENCES user (id),
     CONSTRAINT fk__challenge_submission_comment__challenge_submission
@@ -76,9 +76,9 @@ CREATE TABLE challenge_submission_comment
 CREATE TABLE challenge_submission_vote
 (
     id                      BIGINT PRIMARY KEY AUTO_INCREMENT,
-    is_upvote               BOOL NOT NULL,
-    user_id                 BIGINT,
-    challenge_submission_id BIGINT,
+    is_upvote               BOOL   NOT NULL,
+    user_id                 BIGINT NOT NULL,
+    challenge_submission_id BIGINT NOT NULL,
     CONSTRAINT fk__challenge_submission_vote__user
         FOREIGN KEY (user_id) REFERENCES user (id),
     CONSTRAINT fk__challenge_submission_vote__challenge_submission
