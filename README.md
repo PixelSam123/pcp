@@ -113,34 +113,3 @@ You can then execute your native executable with: `./build/pcp-1.0-SNAPSHOT-runn
 
 If you want to learn more about building native executables, please
 consult https://quarkus.io/guides/gradle-tooling.
-
-## Related Guides
-
-- Hibernate ORM ([guide](https://quarkus.io/guides/hibernate-orm)): Define your persistent model
-  with Hibernate ORM and Jakarta Persistence
-- Hibernate Validator ([guide](https://quarkus.io/guides/validation)): Validate object properties (
-  field, getter) and method parameters for your beans (REST, CDI, Jakarta Persistence)
-- SmallRye JWT ([guide](https://quarkus.io/guides/security-jwt)): Secure your applications with JSON
-  Web Token
-- Liquibase ([guide](https://quarkus.io/guides/liquibase)): Handle your database schema migrations
-  with Liquibase
-- JDBC Driver - MySQL ([guide](https://quarkus.io/guides/datasource)): Connect to the MySQL database
-  via JDBC
-- Blaze-Persistence ([guide](https://quarkus.io/guides/blaze-persistence)): Advanced SQL support for
-  JPA and Entity-Views as efficient DTOs
-- SmallRye JWT Build ([guide](https://quarkus.io/guides/security-jwt-build)): Create JSON Web Token
-  with SmallRye JWT Build API
-
-## Provided Code
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-### RESTEasy Reactive
-
-Easily start your Reactive RESTful Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
