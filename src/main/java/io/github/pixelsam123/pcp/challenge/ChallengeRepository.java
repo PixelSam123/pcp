@@ -217,8 +217,8 @@ public class ChallengeRepository {
                         + "u.name, "
                         + "u.points "
                         + "FROM challenge c JOIN user u ON c.user_id = u.id "
-                        + (username == null ? "" : "WHERE u.name = ? ")
-                        + (username == null ? "WHERE" : "AND") + " c.tier IN ("
+                        + (username == null ? "WHERE " : "WHERE u.name = ? AND ")
+                        + "c.tier IN ("
                         + questionMarks.substring(0, questionMarks.length() - ", ".length())
                         + ") "
                         + sort.sql

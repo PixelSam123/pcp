@@ -20,6 +20,8 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.Boolean.FALSE;
+
 @Tag(name = "challenges", description = "Challenge creation, viewing and editing")
 @Path("/challenges")
 public class ChallengeResource {
@@ -146,7 +148,7 @@ public class ChallengeResource {
             .asTuple()
             .map(Utils::areItemsEqual)
             .flatMap(Unchecked.function(areIdsEqual -> {
-                if (!areIdsEqual) {
+                if (FALSE.equals(areIdsEqual)) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
                         "Not allowed to delete on another user's behalf"

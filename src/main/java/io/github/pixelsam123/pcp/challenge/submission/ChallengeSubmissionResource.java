@@ -86,7 +86,7 @@ public class ChallengeSubmissionResource {
                 codeExecRetrieval
             )
             .asTuple()
-            .flatMap(Unchecked.function((tuple) -> {
+            .flatMap(Unchecked.function(tuple -> {
                 long dbUserId = tuple.getItem1();
                 Tuple2<Integer, String> dbChallengeTierAndTestCase = tuple.getItem2();
                 long dbChallengeSubmissionCount = tuple.getItem3();

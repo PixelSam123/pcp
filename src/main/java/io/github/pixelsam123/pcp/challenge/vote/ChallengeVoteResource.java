@@ -16,6 +16,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.List;
 
+import static java.lang.Boolean.FALSE;
+
 @Tag(name = "challenge_votes", description = "Challenge vote creation, viewing and editing")
 @Path("/challenge_votes")
 public class ChallengeVoteResource {
@@ -61,7 +63,7 @@ public class ChallengeVoteResource {
             .all()
             .unis(userIdRetrieval, challengeCountRetrieval, challengeVoteCountRetrieval)
             .asTuple()
-            .flatMap(Unchecked.function((tuple) -> {
+            .flatMap(Unchecked.function(tuple -> {
                 long dbUserId = tuple.getItem1();
                 long dbChallengeCount = tuple.getItem2();
                 long dbChallengeVoteCount = tuple.getItem3();
@@ -121,7 +123,7 @@ public class ChallengeVoteResource {
             .asTuple()
             .map(Utils::areItemsEqual)
             .flatMap(Unchecked.function(areIdsEqual -> {
-                if (!areIdsEqual) {
+                if (FALSE.equals(areIdsEqual)) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
                         "Not allowed to delete on another user's behalf"
