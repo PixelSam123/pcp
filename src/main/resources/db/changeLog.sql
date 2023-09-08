@@ -5,7 +5,7 @@
 CREATE TABLE user
 (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name          VARCHAR(255) UNIQUE,
+    name          VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     points        INT DEFAULT 0
 );
@@ -14,7 +14,7 @@ CREATE TABLE challenge
 (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT,
     timestamp       TIMESTAMP DEFAULT NOW(),
-    name            VARCHAR(255) UNIQUE,
+    name            VARCHAR(255) NOT NULL UNIQUE,
     description     VARCHAR(255) NOT NULL,
     initial_code    VARCHAR(255) NOT NULL,
     test_case       VARCHAR(255) NOT NULL,
