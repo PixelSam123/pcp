@@ -217,23 +217,19 @@ public class ChallengeRepository {
                         + "u.name, "
                         + "u.points "
                         + "FROM challenge c JOIN user u ON c.user_id = u.id "
-                        + (username == null ? "WHERE " : "WHERE u.name = ? AND ")
-                        + "c.tier IN ("
+                        + "WHERE ? IS NULL OR u.name = ? AND c.tier IN ("
                         + questionMarks.substring(0, questionMarks.length() - ", ".length())
                         + ") "
                         + sort.sql
                 )
             ) {
-                int tierPlaceholderIdx = 1;
+                statement.setString(1, username);
+                statement.setString(2, username);
 
-                if (username != null) {
-                    statement.setString(1, username);
-                    tierPlaceholderIdx = 2;
-                }
-
+                int placeholderIdx = 3;
                 for (int tier : tiers) {
-                    statement.setInt(tierPlaceholderIdx, tier);
-                    tierPlaceholderIdx++;
+                    statement.setInt(placeholderIdx, tier);
+                    placeholderIdx++;
                 }
 
                 List<ChallengeBriefDto> list = new ArrayList<>();
