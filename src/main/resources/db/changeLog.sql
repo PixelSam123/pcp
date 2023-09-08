@@ -21,7 +21,7 @@ CREATE TABLE challenge
     tier            INT          NOT NULL,
     completed_count INT       DEFAULT 0,
     user_id         BIGINT,
-    CONSTRAINT fk_user_challenge
+    CONSTRAINT fk__challenge__user
         FOREIGN KEY (user_id) REFERENCES user (id)
 );
 
@@ -31,9 +31,9 @@ CREATE TABLE challenge_comment
     content      VARCHAR(255) NOT NULL,
     user_id      BIGINT,
     challenge_id BIGINT,
-    CONSTRAINT fk_user_challenge_comment
+    CONSTRAINT fk__challenge_comment__user
         FOREIGN KEY (user_id) REFERENCES user (id),
-    CONSTRAINT fk_challenge_challenge_comment
+    CONSTRAINT fk__challenge_comment__challenge
         FOREIGN KEY (challenge_id) REFERENCES challenge (id)
 );
 
@@ -43,9 +43,9 @@ CREATE TABLE challenge_vote
     is_upvote    BOOL NOT NULL,
     user_id      BIGINT,
     challenge_id BIGINT,
-    CONSTRAINT fk_user_challenge_vote
+    CONSTRAINT fk__challenge_vote__user
         FOREIGN KEY (user_id) REFERENCES user (id),
-    CONSTRAINT fk_challenge_challenge_vote
+    CONSTRAINT fk__challenge_vote__challenge
         FOREIGN KEY (challenge_id) REFERENCES challenge (id)
 );
 
@@ -55,9 +55,9 @@ CREATE TABLE challenge_submission
     code         VARCHAR(255) NOT NULL,
     user_id      BIGINT,
     challenge_id BIGINT,
-    CONSTRAINT fk_user_challenge_submission
+    CONSTRAINT fk__challenge_submission__user
         FOREIGN KEY (user_id) REFERENCES user (id),
-    CONSTRAINT fk_challenge_challenge_submission
+    CONSTRAINT fk__challenge_submission__challenge
         FOREIGN KEY (challenge_id) REFERENCES challenge (id)
 );
 
@@ -67,9 +67,9 @@ CREATE TABLE challenge_submission_comment
     content                 VARCHAR(255) NOT NULL,
     user_id                 BIGINT,
     challenge_submission_id BIGINT,
-    CONSTRAINT fk_user_challenge_submission_comment
+    CONSTRAINT fk__challenge_submission_comment__user
         FOREIGN KEY (user_id) REFERENCES user (id),
-    CONSTRAINT fk_challenge_submission_challenge_submission_comment
+    CONSTRAINT fk__challenge_submission_comment__challenge_submission
         FOREIGN KEY (challenge_submission_id) REFERENCES challenge_submission (id)
 );
 
@@ -79,8 +79,8 @@ CREATE TABLE challenge_submission_vote
     is_upvote               BOOL NOT NULL,
     user_id                 BIGINT,
     challenge_submission_id BIGINT,
-    CONSTRAINT fk_user_challenge_submission_vote
+    CONSTRAINT fk__challenge_submission_vote__user
         FOREIGN KEY (user_id) REFERENCES user (id),
-    CONSTRAINT fk_challenge_submission_challenge_submission_vote
+    CONSTRAINT fk__challenge_submission_vote__challenge_submission
         FOREIGN KEY (challenge_submission_id) REFERENCES challenge_submission (id)
 );
