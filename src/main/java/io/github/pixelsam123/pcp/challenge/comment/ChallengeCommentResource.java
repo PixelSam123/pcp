@@ -72,7 +72,7 @@ public class ChallengeCommentResource {
     @GET
     @Path("/{challenge_name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeCommentDto>> getListByChallengeName(
+    public Uni<List<ChallengeCommentDto>> listByChallengeName(
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository

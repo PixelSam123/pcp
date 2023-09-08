@@ -100,7 +100,7 @@ public class ChallengeSubmissionVoteResource {
     @GET
     @Path("/{submission_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionVoteDto>> getListBySubmissionId(
+    public Uni<List<ChallengeSubmissionVoteDto>> listBySubmissionId(
         @PathParam("submission_id") long submissionId
     ) {
         return challengeSubmissionVoteRepository.listByChallengeSubmissionId(submissionId);

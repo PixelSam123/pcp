@@ -131,7 +131,7 @@ public class ChallengeSubmissionResource {
     @GET
     @Path("/{challenge_name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionDto>> getListByChallengeName(
+    public Uni<List<ChallengeSubmissionDto>> listByChallengeName(
         @PathParam("challenge_name") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository

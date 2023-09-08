@@ -80,7 +80,7 @@ public class ChallengeSubmissionCommentResource {
     @GET
     @Path("/{challenge_submission_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionCommentDto>> getListByChallengeSubmissionId(
+    public Uni<List<ChallengeSubmissionCommentDto>> listByChallengeSubmissionId(
         @PathParam("challenge_submission_id") long challengeSubmissionId
     ) {
         return challengeSubmissionCommentRepository.listByChallengeSubmissionId(

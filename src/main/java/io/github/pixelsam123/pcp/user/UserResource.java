@@ -45,7 +45,7 @@ public class UserResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<UserBriefDto>> getList() {
+    public Uni<List<UserBriefDto>> list() {
         return userRepository.listAllBrief();
     }
 

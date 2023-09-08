@@ -93,7 +93,7 @@ public class ChallengeResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeBriefDto>> getList(
+    public Uni<List<ChallengeBriefDto>> list(
         @QueryParam("tiers") String tiers,
         @QueryParam("username") String username,
         @QueryParam("sortBy") String sortBy
