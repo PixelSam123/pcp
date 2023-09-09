@@ -4,7 +4,6 @@ import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.InternalServerErrorException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -110,9 +109,7 @@ public class ChallengeSubmissionRepository {
                 statement.setLong(3, challengeSubmission.challengeId());
 
                 if (statement.executeUpdate() < 1) {
-                    throw new InternalServerErrorException(
-                        "Insertion error: inserted row count is less than 1"
-                    );
+                    throw new RuntimeException("Insert error: inserted row count is less than 1");
                 }
 
                 return null;

@@ -3,7 +3,6 @@ package io.github.pixelsam123.pcp.user;
 import io.github.pixelsam123.pcp.Utils;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.InternalServerErrorException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -142,9 +141,7 @@ public class UserRepository {
                 statement.setLong(2, id);
 
                 if (statement.executeUpdate() < 1) {
-                    throw new InternalServerErrorException(
-                        "Update error: updated row count is less than 1"
-                    );
+                    throw new RuntimeException("Update error: updated row count is less than 1");
                 }
 
                 return null;
@@ -164,9 +161,7 @@ public class UserRepository {
                 statement.setString(2, passwordHash);
 
                 if (statement.executeUpdate() < 1) {
-                    throw new InternalServerErrorException(
-                        "Insertion error: inserted row count is less than 1"
-                    );
+                    throw new RuntimeException("Insert error: inserted row count is less than 1");
                 }
 
                 return null;

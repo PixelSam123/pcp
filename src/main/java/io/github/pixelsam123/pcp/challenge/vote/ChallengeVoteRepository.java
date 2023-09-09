@@ -4,7 +4,6 @@ import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.InternalServerErrorException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -137,9 +136,7 @@ public class ChallengeVoteRepository {
                 statement.setLong(3, challengeVote.challengeId());
 
                 if (statement.executeUpdate() < 1) {
-                    throw new InternalServerErrorException(
-                        "Insertion error: inserted row count is less than 1"
-                    );
+                    throw new RuntimeException("Insert error: inserted row count is less than 1");
                 }
 
                 return null;
@@ -158,9 +155,7 @@ public class ChallengeVoteRepository {
                 statement.setLong(1, id);
 
                 if (statement.executeUpdate() < 1) {
-                    throw new InternalServerErrorException(
-                        "Deletion error: deleted row count is less than 1"
-                    );
+                    throw new RuntimeException("Delete error: deleted row count is less than 1");
                 }
 
                 return null;
