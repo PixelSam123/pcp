@@ -1,7 +1,6 @@
 package io.github.pixelsam123.pcp.user;
 
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -14,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import static io.smallrye.mutiny.infrastructure.Infrastructure.getDefaultWorkerPool;
 
 @ApplicationScoped
 public class UserRepository {
@@ -40,10 +41,7 @@ public class UserRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Optional<Long>> findIdByName(String name) {
@@ -65,10 +63,7 @@ public class UserRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Optional<UserCredentialsView>> findCredentialsByName(String name) {
@@ -93,10 +88,7 @@ public class UserRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Optional<UserBriefDto>> findBriefByName(String name) {
@@ -122,10 +114,7 @@ public class UserRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<List<UserBriefDto>> listAllBrief() {
@@ -151,10 +140,7 @@ public class UserRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Void> addPointsById(long id, int points) {
@@ -178,10 +164,7 @@ public class UserRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Void> persist(String name, String passwordHash) {
@@ -205,9 +188,6 @@ public class UserRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 }

@@ -2,7 +2,6 @@ package io.github.pixelsam123.pcp.challenge.comment;
 
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -14,6 +13,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+
+import static io.smallrye.mutiny.infrastructure.Infrastructure.getDefaultWorkerPool;
 
 @ApplicationScoped
 public class ChallengeCommentRepository {
@@ -59,10 +60,7 @@ public class ChallengeCommentRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Void> persist(ChallengeCommentCreateDto challengeComment, long userId) {
@@ -88,9 +86,6 @@ public class ChallengeCommentRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 }

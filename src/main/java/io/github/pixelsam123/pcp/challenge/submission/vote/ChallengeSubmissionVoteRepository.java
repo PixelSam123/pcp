@@ -2,7 +2,6 @@ package io.github.pixelsam123.pcp.challenge.submission.vote;
 
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -15,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import static io.smallrye.mutiny.infrastructure.Infrastructure.getDefaultWorkerPool;
 
 @ApplicationScoped
 public class ChallengeSubmissionVoteRepository {
@@ -46,10 +47,7 @@ public class ChallengeSubmissionVoteRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Optional<Long>> findUserIdById(long id) {
@@ -71,10 +69,7 @@ public class ChallengeSubmissionVoteRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Optional<Boolean>> findIsUpvoteByChallengeSubmissionIdAndUserName(
@@ -102,10 +97,7 @@ public class ChallengeSubmissionVoteRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<List<ChallengeSubmissionVoteDto>> listByChallengeSubmissionId(
@@ -146,10 +138,7 @@ public class ChallengeSubmissionVoteRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Void> persist(
@@ -179,10 +168,7 @@ public class ChallengeSubmissionVoteRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 
     public Uni<Void> deleteById(Long id) {
@@ -205,9 +191,6 @@ public class ChallengeSubmissionVoteRepository {
             }
         });
 
-        return Uni
-            .createFrom()
-            .item(dbOperation)
-            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
+        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
     }
 }
