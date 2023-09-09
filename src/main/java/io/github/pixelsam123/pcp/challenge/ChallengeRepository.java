@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.challenge;
 
+import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -13,9 +14,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
-
-import static io.smallrye.mutiny.infrastructure.Infrastructure.getDefaultWorkerPool;
 
 @ApplicationScoped
 public class ChallengeRepository {
@@ -26,7 +24,7 @@ public class ChallengeRepository {
     }
 
     public Uni<Long> countByName(String name) {
-        Supplier<Long> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -40,13 +38,11 @@ public class ChallengeRepository {
 
                 return res.getLong(1);
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Long> countById(long id) {
-        Supplier<Long> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -60,13 +56,11 @@ public class ChallengeRepository {
 
                 return res.getLong(1);
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<ChallengeVerifierView>> findVerifierById(long id) {
-        Supplier<Optional<ChallengeVerifierView>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -85,13 +79,11 @@ public class ChallengeRepository {
                     res.getString("test_case")
                 ));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<Long>> findIdByName(String name) {
-        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -107,13 +99,11 @@ public class ChallengeRepository {
 
                 return Optional.of(res.getLong("id"));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<Long>> findUserIdById(long id) {
-        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -129,13 +119,11 @@ public class ChallengeRepository {
 
                 return Optional.of(res.getLong("user_id"));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<ChallengeDto>> findDtoByName(String name) {
-        Supplier<Optional<ChallengeDto>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -173,9 +161,7 @@ public class ChallengeRepository {
                     res.getString("c.initial_code")
                 ));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<List<ChallengeBriefDto>> list(
@@ -187,7 +173,7 @@ public class ChallengeRepository {
             return Uni.createFrom().item(List::of);
         }
 
-        Supplier<List<ChallengeBriefDto>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             String questionMarks = "?, ".repeat(tiers.size());
 
             try (
@@ -236,13 +222,11 @@ public class ChallengeRepository {
 
                 return list;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Void> addCompletedCountById(long id) {
-        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -259,13 +243,11 @@ public class ChallengeRepository {
 
                 return null;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Void> persist(ChallengeCreateDto challenge, long userId) {
-        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -289,13 +271,11 @@ public class ChallengeRepository {
 
                 return null;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Void> deleteById(long id) {
-        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -312,8 +292,6 @@ public class ChallengeRepository {
 
                 return null;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 }

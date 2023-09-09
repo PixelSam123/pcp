@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.vote;
 
+import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -13,9 +14,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
-
-import static io.smallrye.mutiny.infrastructure.Infrastructure.getDefaultWorkerPool;
 
 @ApplicationScoped
 public class ChallengeVoteRepository {
@@ -26,7 +24,7 @@ public class ChallengeVoteRepository {
     }
 
     public Uni<Long> countByChallengeIdAndUserId(long challengeId, long userId) {
-        Supplier<Long> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -41,13 +39,11 @@ public class ChallengeVoteRepository {
 
                 return res.getLong(1);
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<Long>> findUserIdById(long id) {
-        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -63,16 +59,14 @@ public class ChallengeVoteRepository {
 
                 return Optional.of(res.getLong("user_id"));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<Boolean>> findIsUpvoteByChallengeIdAndUserName(
         long challengeId,
         String userName
     ) {
-        Supplier<Optional<Boolean>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -90,13 +84,11 @@ public class ChallengeVoteRepository {
 
                 return Optional.of(res.getBoolean("cv.is_upvote"));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<List<ChallengeVoteDto>> listByChallengeId(long challengeId) {
-        Supplier<List<ChallengeVoteDto>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -129,13 +121,11 @@ public class ChallengeVoteRepository {
 
                 return list;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Void> persist(ChallengeVoteCreateDto challengeVote, long userId) {
-        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -155,13 +145,11 @@ public class ChallengeVoteRepository {
 
                 return null;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Void> deleteById(long id) {
-        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -178,8 +166,6 @@ public class ChallengeVoteRepository {
 
                 return null;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 }

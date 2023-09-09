@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.user;
 
+import io.github.pixelsam123.pcp.Utils;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -12,9 +13,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
-
-import static io.smallrye.mutiny.infrastructure.Infrastructure.getDefaultWorkerPool;
 
 @ApplicationScoped
 public class UserRepository {
@@ -25,7 +23,7 @@ public class UserRepository {
     }
 
     public Uni<Long> countByName(String name) {
-        Supplier<Long> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -39,13 +37,11 @@ public class UserRepository {
 
                 return res.getLong(1);
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<Long>> findIdByName(String name) {
-        Supplier<Optional<Long>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -61,13 +57,11 @@ public class UserRepository {
 
                 return Optional.of(res.getLong("id"));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<UserCredentialsView>> findCredentialsByName(String name) {
-        Supplier<Optional<UserCredentialsView>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -86,13 +80,11 @@ public class UserRepository {
                     res.getString("password_hash")
                 ));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Optional<UserBriefDto>> findBriefByName(String name) {
-        Supplier<Optional<UserBriefDto>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -112,13 +104,11 @@ public class UserRepository {
                     res.getInt("points")
                 ));
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<List<UserBriefDto>> listAllBrief() {
-        Supplier<List<UserBriefDto>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -138,13 +128,11 @@ public class UserRepository {
 
                 return list;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Void> addPointsById(long id, int points) {
-        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -162,13 +150,11 @@ public class UserRepository {
 
                 return null;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Void> persist(String name, String passwordHash) {
-        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -186,8 +172,6 @@ public class UserRepository {
 
                 return null;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 }

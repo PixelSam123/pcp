@@ -1,6 +1,10 @@
 package io.github.pixelsam123.pcp;
 
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.tuples.Tuple;
+
+import java.util.function.Supplier;
 
 public class Utils {
     private Utils() {
@@ -17,5 +21,12 @@ public class Utils {
         }
 
         return true;
+    }
+
+    public static <T> Uni<T> runInWorkerPool(Supplier<T> supplier) {
+        return Uni
+            .createFrom()
+            .item(supplier)
+            .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 }

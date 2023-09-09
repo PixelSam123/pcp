@@ -1,5 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.submission.comment;
 
+import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -12,9 +13,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
-
-import static io.smallrye.mutiny.infrastructure.Infrastructure.getDefaultWorkerPool;
 
 @ApplicationScoped
 public class ChallengeSubmissionCommentRepository {
@@ -25,7 +23,7 @@ public class ChallengeSubmissionCommentRepository {
     }
 
     public Uni<List<ChallengeSubmissionCommentDto>> listByChallengeSubmissionId(long challengeSubmissionId) {
-        Supplier<List<ChallengeSubmissionCommentDto>> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -58,16 +56,14 @@ public class ChallengeSubmissionCommentRepository {
 
                 return list;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 
     public Uni<Void> persist(
         ChallengeSubmissionCommentCreateDto challengeSubmissionComment,
         long userId
     ) {
-        Supplier<Void> dbOperation = Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -88,8 +84,6 @@ public class ChallengeSubmissionCommentRepository {
 
                 return null;
             }
-        });
-
-        return Uni.createFrom().item(dbOperation).runSubscriptionOn(getDefaultWorkerPool());
+        }));
     }
 }
