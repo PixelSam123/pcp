@@ -45,19 +45,16 @@ public class TokenResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> loginForToken(@RestForm String username, @RestForm String password) {
         return userRepository
-            .findIdAndPasswordHashByName(username)
-            .map(tuple -> tuple.orElseThrow(
+            .findByNameCredentials(username)
+            .map(dbCredentials -> dbCredentials.orElseThrow(
                 () -> new HttpException(Response.Status.BAD_REQUEST, "Incorrect username")
             ))
-            .map(Unchecked.function(dbUserIdAndPasswordHash -> {
-                Long dbUserId = dbUserIdAndPasswordHash.getItem1();
-                String dbUserPasswordHash = dbUserIdAndPasswordHash.getItem2();
-
-                if (!verifyPassword(password, dbUserPasswordHash)) {
+            .map(Unchecked.function(dbCredentials -> {
+                if (!verifyPassword(password, dbCredentials.passwordHash())) {
                     throw new HttpException(Response.Status.BAD_REQUEST, "Incorrect password");
                 }
 
-                String token = createToken(dbUserId.toString(), username);
+                String token = createToken(Long.toString(dbCredentials.userId()), username);
 
                 return Response
                     .ok(new Token(token, "Bearer"))
