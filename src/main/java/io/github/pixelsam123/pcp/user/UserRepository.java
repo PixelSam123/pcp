@@ -71,7 +71,7 @@ public class UserRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<UserCredentialsView>> findByNameCredentials(String name) {
+    public Uni<Optional<UserCredentialsView>> findCredentialsByName(String name) {
         Supplier<Optional<UserCredentialsView>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
@@ -99,7 +99,7 @@ public class UserRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<UserBriefDto>> findByNameBrief(String name) {
+    public Uni<Optional<UserBriefDto>> findBriefByName(String name) {
         Supplier<Optional<UserBriefDto>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();

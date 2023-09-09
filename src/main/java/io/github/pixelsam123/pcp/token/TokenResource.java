@@ -45,7 +45,7 @@ public class TokenResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> loginForToken(@RestForm String username, @RestForm String password) {
         return userRepository
-            .findByNameCredentials(username)
+            .findCredentialsByName(username)
             .map(dbCredentials -> dbCredentials.orElseThrow(
                 () -> new HttpException(Response.Status.BAD_REQUEST, "Incorrect username")
             ))

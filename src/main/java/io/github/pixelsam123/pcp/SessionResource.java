@@ -45,7 +45,7 @@ public class SessionResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<UserBriefDto> sessionUser(@Context SecurityContext ctx) {
         return userRepository
-            .findByNameBrief(ctx.getUserPrincipal().getName())
+            .findBriefByName(ctx.getUserPrincipal().getName())
             .map(dbUser -> dbUser.orElseThrow(() -> new HttpException(
                 Response.Status.NOT_FOUND,
                 "Username of your session is not found"

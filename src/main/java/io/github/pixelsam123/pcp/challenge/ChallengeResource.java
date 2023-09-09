@@ -117,7 +117,7 @@ public class ChallengeResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<ChallengeDto> getByName(@PathParam("name") String name) {
         return challengeRepository
-            .findByNameDto(name)
+            .findDtoByName(name)
             .map(dbChallenge -> dbChallenge.orElseThrow(
                 () -> new HttpException(Response.Status.NOT_FOUND, "Challenge not found")
             ));

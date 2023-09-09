@@ -54,7 +54,7 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<UserBriefDto> getByName(@PathParam("name") String name) {
         return userRepository
-            .findByNameBrief(name)
+            .findBriefByName(name)
             .map(dbUser -> dbUser.orElseThrow(
                 () -> new HttpException(Response.Status.NOT_FOUND, "User not found")
             ));

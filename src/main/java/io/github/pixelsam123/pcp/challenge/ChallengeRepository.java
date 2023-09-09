@@ -146,7 +146,7 @@ public class ChallengeRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<ChallengeDto>> findByNameDto(String name) {
+    public Uni<Optional<ChallengeDto>> findDtoByName(String name) {
         Supplier<Optional<ChallengeDto>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
