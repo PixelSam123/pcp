@@ -3,7 +3,6 @@ package io.github.pixelsam123.pcp.challenge.submission.comment;
 import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
 
@@ -23,7 +22,7 @@ public class ChallengeSubmissionCommentRepository {
     }
 
     public Uni<List<ChallengeSubmissionCommentDto>> listByChallengeSubmissionId(long challengeSubmissionId) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -56,14 +55,14 @@ public class ChallengeSubmissionCommentRepository {
 
                 return list;
             }
-        }));
+        });
     }
 
     public Uni<Void> persist(
         ChallengeSubmissionCommentCreateDto challengeSubmissionComment,
         long userId
     ) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -84,6 +83,6 @@ public class ChallengeSubmissionCommentRepository {
 
                 return null;
             }
-        }));
+        });
     }
 }

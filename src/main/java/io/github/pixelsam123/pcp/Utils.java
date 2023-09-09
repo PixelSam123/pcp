@@ -3,8 +3,8 @@ package io.github.pixelsam123.pcp;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.tuples.Tuple;
-
-import java.util.function.Supplier;
+import io.smallrye.mutiny.unchecked.Unchecked;
+import io.smallrye.mutiny.unchecked.UncheckedSupplier;
 
 public class Utils {
     private Utils() {
@@ -23,10 +23,10 @@ public class Utils {
         return true;
     }
 
-    public static <T> Uni<T> runInWorkerPool(Supplier<T> supplier) {
+    public static <T> Uni<T> runInWorkerPool(UncheckedSupplier<T> supplier) {
         return Uni
             .createFrom()
-            .item(supplier)
+            .item(Unchecked.supplier(supplier))
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 }

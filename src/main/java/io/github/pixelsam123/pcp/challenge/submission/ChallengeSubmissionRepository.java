@@ -3,7 +3,6 @@ package io.github.pixelsam123.pcp.challenge.submission;
 import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
 
@@ -23,7 +22,7 @@ public class ChallengeSubmissionRepository {
     }
 
     public Uni<Long> countByChallengeIdAndUserId(long challengeId, long userId) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -39,11 +38,11 @@ public class ChallengeSubmissionRepository {
 
                 return res.getLong(1);
             }
-        }));
+        });
     }
 
     public Uni<Long> countById(long id) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -57,11 +56,11 @@ public class ChallengeSubmissionRepository {
 
                 return res.getLong(1);
             }
-        }));
+        });
     }
 
     public Uni<List<ChallengeSubmissionDto>> listByChallengeId(long challengeId) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -94,11 +93,11 @@ public class ChallengeSubmissionRepository {
 
                 return list;
             }
-        }));
+        });
     }
 
     public Uni<Void> persist(ChallengeSubmissionCreateDto challengeSubmission, long userId) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -118,6 +117,6 @@ public class ChallengeSubmissionRepository {
 
                 return null;
             }
-        }));
+        });
     }
 }

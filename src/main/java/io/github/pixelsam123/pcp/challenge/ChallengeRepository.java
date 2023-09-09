@@ -3,7 +3,6 @@ package io.github.pixelsam123.pcp.challenge;
 import io.github.pixelsam123.pcp.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
 
@@ -24,7 +23,7 @@ public class ChallengeRepository {
     }
 
     public Uni<Long> countByName(String name) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -38,11 +37,11 @@ public class ChallengeRepository {
 
                 return res.getLong(1);
             }
-        }));
+        });
     }
 
     public Uni<Long> countById(long id) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -56,11 +55,11 @@ public class ChallengeRepository {
 
                 return res.getLong(1);
             }
-        }));
+        });
     }
 
     public Uni<Optional<ChallengeVerifierView>> findVerifierById(long id) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -79,11 +78,11 @@ public class ChallengeRepository {
                     res.getString("test_case")
                 ));
             }
-        }));
+        });
     }
 
     public Uni<Optional<Long>> findIdByName(String name) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -99,11 +98,11 @@ public class ChallengeRepository {
 
                 return Optional.of(res.getLong("id"));
             }
-        }));
+        });
     }
 
     public Uni<Optional<Long>> findUserIdById(long id) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -119,11 +118,11 @@ public class ChallengeRepository {
 
                 return Optional.of(res.getLong("user_id"));
             }
-        }));
+        });
     }
 
     public Uni<Optional<ChallengeDto>> findDtoByName(String name) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -161,7 +160,7 @@ public class ChallengeRepository {
                     res.getString("c.initial_code")
                 ));
             }
-        }));
+        });
     }
 
     public Uni<List<ChallengeBriefDto>> list(
@@ -173,7 +172,7 @@ public class ChallengeRepository {
             return Uni.createFrom().item(List::of);
         }
 
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             String questionMarks = "?, ".repeat(tiers.size());
 
             try (
@@ -222,11 +221,11 @@ public class ChallengeRepository {
 
                 return list;
             }
-        }));
+        });
     }
 
     public Uni<Void> addCompletedCountById(long id) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -243,11 +242,11 @@ public class ChallengeRepository {
 
                 return null;
             }
-        }));
+        });
     }
 
     public Uni<Void> persist(ChallengeCreateDto challenge, long userId) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -271,11 +270,11 @@ public class ChallengeRepository {
 
                 return null;
             }
-        }));
+        });
     }
 
     public Uni<Void> deleteById(long id) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -292,6 +291,6 @@ public class ChallengeRepository {
 
                 return null;
             }
-        }));
+        });
     }
 }

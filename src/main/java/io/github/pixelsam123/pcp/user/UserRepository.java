@@ -2,7 +2,6 @@ package io.github.pixelsam123.pcp.user;
 
 import io.github.pixelsam123.pcp.Utils;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
 
@@ -23,7 +22,7 @@ public class UserRepository {
     }
 
     public Uni<Long> countByName(String name) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -37,11 +36,11 @@ public class UserRepository {
 
                 return res.getLong(1);
             }
-        }));
+        });
     }
 
     public Uni<Optional<Long>> findIdByName(String name) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -57,11 +56,11 @@ public class UserRepository {
 
                 return Optional.of(res.getLong("id"));
             }
-        }));
+        });
     }
 
     public Uni<Optional<UserCredentialsView>> findCredentialsByName(String name) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -80,11 +79,11 @@ public class UserRepository {
                     res.getString("password_hash")
                 ));
             }
-        }));
+        });
     }
 
     public Uni<Optional<UserBriefDto>> findBriefByName(String name) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -104,11 +103,11 @@ public class UserRepository {
                     res.getInt("points")
                 ));
             }
-        }));
+        });
     }
 
     public Uni<List<UserBriefDto>> listAllBrief() {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -128,11 +127,11 @@ public class UserRepository {
 
                 return list;
             }
-        }));
+        });
     }
 
     public Uni<Void> addPointsById(long id, int points) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -150,11 +149,11 @@ public class UserRepository {
 
                 return null;
             }
-        }));
+        });
     }
 
     public Uni<Void> persist(String name, String passwordHash) {
-        return Utils.runInWorkerPool(Unchecked.supplier(() -> {
+        return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -172,6 +171,6 @@ public class UserRepository {
 
                 return null;
             }
-        }));
+        });
     }
 }
