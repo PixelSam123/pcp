@@ -54,7 +54,7 @@ public class TokenResource {
                     throw new HttpException(Response.Status.BAD_REQUEST, "Incorrect password");
                 }
 
-                String token = createToken(Long.toString(dbCredentials.userId()), username);
+                String token = createToken(Long.toString(dbCredentials.id()), username);
 
                 return Response
                     .ok(new Token(token, "Bearer"))
