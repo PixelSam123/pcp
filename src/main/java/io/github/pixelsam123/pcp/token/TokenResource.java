@@ -24,20 +24,20 @@ import java.util.Set;
 @Path("/token")
 public class TokenResource {
     private final String cookieName;
+    private final int tokenMinutesDuration;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final UserRepository userRepository;
-    private final int tokenMinutesDuration;
 
     public TokenResource(
         @ConfigProperty(name = "mp.jwt.token.cookie") String cookieName,
+        @ConfigProperty(name = "token-minutes-duration") int tokenMinutesDuration,
         Argon2PasswordEncoder argon2PasswordEncoder,
-        UserRepository userRepository,
-        @ConfigProperty(name = "token-minutes-duration") int tokenMinutesDuration
+        UserRepository userRepository
     ) {
         this.cookieName = cookieName;
+        this.tokenMinutesDuration = tokenMinutesDuration;
         this.argon2PasswordEncoder = argon2PasswordEncoder;
         this.userRepository = userRepository;
-        this.tokenMinutesDuration = tokenMinutesDuration;
     }
 
     @POST
