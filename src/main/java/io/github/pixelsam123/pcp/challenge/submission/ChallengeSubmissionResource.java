@@ -2,12 +2,12 @@ package io.github.pixelsam123.pcp.challenge.submission;
 
 import io.github.pixelsam123.pcp.HttpException;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
+import io.github.pixelsam123.pcp.challenge.ChallengeVerifierView;
 import io.github.pixelsam123.pcp.code.exec.CodeExecRequest;
 import io.github.pixelsam123.pcp.code.exec.CodeExecResponse;
 import io.github.pixelsam123.pcp.code.exec.CodeExecService;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.tuples.Tuple2;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
@@ -58,9 +58,9 @@ public class ChallengeSubmissionResource {
                 "User of your credentials doesn't exist"
             )));
 
-        Uni<Tuple2<Integer, String>> challengeTierAndTestCaseRetrieval = challengeRepository
-            .findTierAndTestCaseById(challengeSubmissionToCreate.challengeId())
-            .map(challengeTierAndTestCase -> challengeTierAndTestCase.orElseThrow(
+        Uni<ChallengeVerifierView> challengeVerifierRetrieval = challengeRepository
+            .findVerifierById(challengeSubmissionToCreate.challengeId())
+            .map(dbChallengeVerifier -> dbChallengeVerifier.orElseThrow(
                 () -> new HttpException(Response.Status.BAD_REQUEST, "Challenge doesn't exist")
             ));
 
@@ -70,10 +70,10 @@ public class ChallengeSubmissionResource {
             )
         );
 
-        Uni<CodeExecResponse> codeExecRetrieval = challengeTierAndTestCaseRetrieval
-            .flatMap(tuple -> codeExecService.getCodeExecResult(new CodeExecRequest(
+        Uni<CodeExecResponse> codeExecRetrieval = challengeVerifierRetrieval
+            .flatMap(dbChallengeVerifier -> codeExecService.getCodeExecResult(new CodeExecRequest(
                 "js",
-                challengeSubmissionToCreate.code() + '\n' + tuple.getItem2()
+                challengeSubmissionToCreate.code() + '\n' + dbChallengeVerifier.testCase()
             )));
 
         return Uni
@@ -81,14 +81,14 @@ public class ChallengeSubmissionResource {
             .all()
             .unis(
                 userIdRetrieval,
-                challengeTierAndTestCaseRetrieval,
+                challengeVerifierRetrieval,
                 challengeSubmissionCountRetrieval,
                 codeExecRetrieval
             )
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
                 long dbUserId = tuple.getItem1();
-                Tuple2<Integer, String> dbChallengeTierAndTestCase = tuple.getItem2();
+                ChallengeVerifierView dbChallengeVerifier = tuple.getItem2();
                 long dbChallengeSubmissionCount = tuple.getItem3();
                 CodeExecResponse codeExec = tuple.getItem4();
 
@@ -99,12 +99,10 @@ public class ChallengeSubmissionResource {
                     );
                 }
 
-                int challengeTier = dbChallengeTierAndTestCase.getItem1();
-
                 Uni<Void> pointsAdditionTask =
                     dbChallengeSubmissionCount < 1 ? userRepository.addPointsById(
                         dbUserId,
-                        pointsForTier(challengeTier)
+                        pointsForTier(dbChallengeVerifier.tier())
                     ) : Uni.createFrom().voidItem();
 
                 Uni<Void> challengeCompletedCountAdditionTask =

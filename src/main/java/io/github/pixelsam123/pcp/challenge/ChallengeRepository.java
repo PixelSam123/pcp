@@ -3,7 +3,6 @@ package io.github.pixelsam123.pcp.challenge;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
-import io.smallrye.mutiny.tuples.Tuple2;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -71,8 +70,8 @@ public class ChallengeRepository {
             .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
     }
 
-    public Uni<Optional<Tuple2<Integer, String>>> findTierAndTestCaseById(long id) {
-        Supplier<Optional<Tuple2<Integer, String>>> dbOperation = Unchecked.supplier(() -> {
+    public Uni<Optional<ChallengeVerifierView>> findVerifierById(long id) {
+        Supplier<Optional<ChallengeVerifierView>> dbOperation = Unchecked.supplier(() -> {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
@@ -86,7 +85,10 @@ public class ChallengeRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(Tuple2.of(res.getInt("tier"), res.getString("test_case")));
+                return Optional.of(new ChallengeVerifierView(
+                    res.getInt("tier"),
+                    res.getString("test_case")
+                ));
             }
         });
 
