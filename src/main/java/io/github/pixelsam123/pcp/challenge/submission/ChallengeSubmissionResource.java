@@ -121,9 +121,8 @@ public class ChallengeSubmissionResource {
                         pointsAdditionTask,
                         challengeCompletedCountAdditionTask
                     )
-                    .asTuple();
-            }))
-            .replaceWithVoid();
+                    .discardItems();
+            }));
     }
 
     @GET
