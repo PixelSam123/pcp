@@ -40,7 +40,8 @@ public class ChallengeCommentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> create(
-        ChallengeCommentCreateDto challengeCommentToCreate, @Context SecurityContext ctx
+        ChallengeCommentCreateDto challengeComment,
+        @Context SecurityContext ctx
     ) {
         Uni<Long> dbUserIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
@@ -50,7 +51,7 @@ public class ChallengeCommentResource {
             )));
 
         Uni<Long> challengeCountRetrieval =
-            challengeRepository.countById(challengeCommentToCreate.challengeId());
+            challengeRepository.countById(challengeComment.challengeId());
 
         return Uni
             .combine()
@@ -65,7 +66,7 @@ public class ChallengeCommentResource {
                     throw new HttpException(Response.Status.BAD_REQUEST, "Challenge doesn't exist");
                 }
 
-                return challengeCommentRepository.persist(challengeCommentToCreate, dbUserId);
+                return challengeCommentRepository.persist(challengeComment, dbUserId);
             }));
     }
 

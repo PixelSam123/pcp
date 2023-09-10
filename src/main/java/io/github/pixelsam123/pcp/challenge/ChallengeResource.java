@@ -43,9 +43,7 @@ public class ChallengeResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Void> create(
-        ChallengeCreateDto challengeToCreate, @Context SecurityContext ctx
-    ) {
+    public Uni<Void> create(ChallengeCreateDto challenge, @Context SecurityContext ctx) {
         Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
@@ -53,13 +51,12 @@ public class ChallengeResource {
                 "User of your credentials doesn't exist"
             )));
 
-        Uni<Long> challengeCountRetrieval =
-            challengeRepository.countByName(challengeToCreate.name());
+        Uni<Long> challengeCountRetrieval = challengeRepository.countByName(challenge.name());
 
         Uni<CodeExecResponse> codeExecRetrieval = codeExecService.getCodeExecResult(
             new CodeExecRequest(
                 "js",
-                challengeToCreate.codeForVerification() + '\n' + challengeToCreate.testCase()
+                challenge.codeForVerification() + '\n' + challenge.testCase()
             )
         );
 
@@ -87,7 +84,7 @@ public class ChallengeResource {
                     );
                 }
 
-                return challengeRepository.persist(challengeToCreate, dbUserId);
+                return challengeRepository.persist(challenge, dbUserId);
             }));
     }
 

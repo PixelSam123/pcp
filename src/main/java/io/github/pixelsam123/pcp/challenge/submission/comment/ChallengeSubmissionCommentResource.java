@@ -40,7 +40,7 @@ public class ChallengeSubmissionCommentResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> create(
-        ChallengeSubmissionCommentCreateDto challengeSubmissionCommentToCreate,
+        ChallengeSubmissionCommentCreateDto challengeSubmissionComment,
         @Context SecurityContext ctx
     ) {
         Uni<Long> userIdRetrieval = userRepository
@@ -51,7 +51,7 @@ public class ChallengeSubmissionCommentResource {
             )));
 
         Uni<Long> challengeSubmissionCountRetrieval = challengeSubmissionRepository.countById(
-            challengeSubmissionCommentToCreate.submissionId()
+            challengeSubmissionComment.submissionId()
         );
 
         return Uni
@@ -71,7 +71,7 @@ public class ChallengeSubmissionCommentResource {
                 }
 
                 return challengeSubmissionCommentRepository.persist(
-                    challengeSubmissionCommentToCreate,
+                    challengeSubmissionComment,
                     dbUserId
                 );
             }));

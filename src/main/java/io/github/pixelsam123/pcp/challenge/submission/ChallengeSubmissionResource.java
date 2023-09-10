@@ -48,7 +48,7 @@ public class ChallengeSubmissionResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> create(
-        ChallengeSubmissionCreateDto challengeSubmissionToCreate,
+        ChallengeSubmissionCreateDto challengeSubmission,
         @Context SecurityContext ctx
     ) {
         Uni<Long> userIdRetrieval = userRepository
@@ -59,21 +59,21 @@ public class ChallengeSubmissionResource {
             )));
 
         Uni<ChallengeVerifierView> challengeVerifierRetrieval = challengeRepository
-            .findVerifierById(challengeSubmissionToCreate.challengeId())
+            .findVerifierById(challengeSubmission.challengeId())
             .map(dbChallengeVerifier -> dbChallengeVerifier.orElseThrow(
                 () -> new HttpException(Response.Status.BAD_REQUEST, "Challenge doesn't exist")
             ));
 
         Uni<Long> challengeSubmissionCountRetrieval = userIdRetrieval.flatMap(
             dbUserId -> challengeSubmissionRepository.countByChallengeIdAndUserId(
-                challengeSubmissionToCreate.challengeId(), dbUserId
+                challengeSubmission.challengeId(), dbUserId
             )
         );
 
         Uni<CodeExecResponse> codeExecRetrieval = challengeVerifierRetrieval
             .flatMap(dbChallengeVerifier -> codeExecService.getCodeExecResult(new CodeExecRequest(
                 "js",
-                challengeSubmissionToCreate.code() + '\n' + dbChallengeVerifier.testCase()
+                challengeSubmission.code() + '\n' + dbChallengeVerifier.testCase()
             )));
 
         return Uni
@@ -107,17 +107,14 @@ public class ChallengeSubmissionResource {
 
                 Uni<Void> challengeCompletedCountAdditionTask =
                     dbChallengeSubmissionCount < 1 ? challengeRepository.addCompletedCountById(
-                        challengeSubmissionToCreate.challengeId()
+                        challengeSubmission.challengeId()
                     ) : Uni.createFrom().voidItem();
 
                 return Uni
                     .combine()
                     .all()
                     .unis(
-                        challengeSubmissionRepository.persist(
-                            challengeSubmissionToCreate,
-                            dbUserId
-                        ),
+                        challengeSubmissionRepository.persist(challengeSubmission, dbUserId),
                         pointsAdditionTask,
                         challengeCompletedCountAdditionTask
                     )

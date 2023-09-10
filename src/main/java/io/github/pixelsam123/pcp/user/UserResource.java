@@ -28,17 +28,17 @@ public class UserResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Void> create(UserCreateDto userToCreate) {
+    public Uni<Void> create(UserCreateDto user) {
         return userRepository
-            .countByName(userToCreate.name())
+            .countByName(user.name())
             .flatMap(Unchecked.function(dbUserCount -> {
                 if (dbUserCount > 0) {
                     throw new HttpException(Response.Status.BAD_REQUEST, "User already exists");
                 }
 
                 return userRepository.persist(
-                    userToCreate.name(),
-                    argon2PasswordEncoder.encode(userToCreate.password())
+                    user.name(),
+                    argon2PasswordEncoder.encode(user.password())
                 );
             }));
     }

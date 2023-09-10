@@ -39,9 +39,7 @@ public class ChallengeVoteResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Void> create(
-        ChallengeVoteCreateDto challengeVoteToCreate, @Context SecurityContext ctx
-    ) {
+    public Uni<Void> create(ChallengeVoteCreateDto challengeVote, @Context SecurityContext ctx) {
         Uni<Long> userIdRetrieval = userRepository
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
@@ -50,11 +48,11 @@ public class ChallengeVoteResource {
             )));
 
         Uni<Long> challengeCountRetrieval =
-            challengeRepository.countById(challengeVoteToCreate.challengeId());
+            challengeRepository.countById(challengeVote.challengeId());
 
         Uni<Long> challengeVoteCountRetrieval = userIdRetrieval.flatMap(
             dbUserId -> challengeVoteRepository.countByChallengeIdAndUserId(
-                challengeVoteToCreate.challengeId(), dbUserId
+                challengeVote.challengeId(), dbUserId
             )
         );
 
@@ -79,7 +77,7 @@ public class ChallengeVoteResource {
                     );
                 }
 
-                return challengeVoteRepository.persist(challengeVoteToCreate, dbUserId);
+                return challengeVoteRepository.persist(challengeVote, dbUserId);
             }));
     }
 

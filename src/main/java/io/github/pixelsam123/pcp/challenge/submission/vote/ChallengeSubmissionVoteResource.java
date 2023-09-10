@@ -43,7 +43,7 @@ public class ChallengeSubmissionVoteResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> create(
-        ChallengeSubmissionVoteCreateDto challengeSubmissionVoteToCreate,
+        ChallengeSubmissionVoteCreateDto challengeSubmissionVote,
         @Context SecurityContext ctx
     ) {
         Uni<Long> userIdRetrieval = userRepository
@@ -54,11 +54,11 @@ public class ChallengeSubmissionVoteResource {
             )));
 
         Uni<Long> challengeSubmissionCountRetrieval =
-            challengeSubmissionRepository.countById(challengeSubmissionVoteToCreate.submissionId());
+            challengeSubmissionRepository.countById(challengeSubmissionVote.submissionId());
 
         Uni<Long> challengeSubmissionVoteCountRetrieval = userIdRetrieval.flatMap(
             dbUserId -> challengeSubmissionVoteRepository.countByChallengeSubmissionIdAndUserId(
-                challengeSubmissionVoteToCreate.submissionId(), dbUserId
+                challengeSubmissionVote.submissionId(), dbUserId
             )
         );
 
@@ -90,10 +90,7 @@ public class ChallengeSubmissionVoteResource {
                     );
                 }
 
-                return challengeSubmissionVoteRepository.persist(
-                    challengeSubmissionVoteToCreate,
-                    dbUserId
-                );
+                return challengeSubmissionVoteRepository.persist(challengeSubmissionVote, dbUserId);
             }));
     }
 
