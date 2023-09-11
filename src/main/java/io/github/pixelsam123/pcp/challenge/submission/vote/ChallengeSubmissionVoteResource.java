@@ -19,10 +19,10 @@ import java.util.List;
 import static java.lang.Boolean.FALSE;
 
 @Tag(
-    name = "challenge_submission_votes",
+    name = "challenge-submission-votes",
     description = "Challenge submission vote creation, viewing and editing"
 )
-@Path("/challenge_submission_votes")
+@Path("/challenge-submission-votes")
 public class ChallengeSubmissionVoteResource {
     private final ChallengeSubmissionRepository challengeSubmissionRepository;
     private final ChallengeSubmissionVoteRepository challengeSubmissionVoteRepository;
@@ -95,10 +95,10 @@ public class ChallengeSubmissionVoteResource {
     }
 
     @GET
-    @Path("/{submission_id}")
+    @Path("/submission-id/{submissionId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<ChallengeSubmissionVoteDto>> listBySubmissionId(
-        @PathParam("submission_id") long submissionId
+        @PathParam("submissionId") long submissionId
     ) {
         return challengeSubmissionVoteRepository.listByChallengeSubmissionId(submissionId);
     }

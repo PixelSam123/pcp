@@ -18,8 +18,8 @@ import java.util.List;
 
 import static java.lang.Boolean.FALSE;
 
-@Tag(name = "challenge_votes", description = "Challenge vote creation, viewing and editing")
-@Path("/challenge_votes")
+@Tag(name = "challenge-votes", description = "Challenge vote creation, viewing and editing")
+@Path("/challenge-votes")
 public class ChallengeVoteResource {
     private final ChallengeRepository challengeRepository;
     private final ChallengeVoteRepository challengeVoteRepository;
@@ -82,10 +82,10 @@ public class ChallengeVoteResource {
     }
 
     @GET
-    @Path("/{challenge_name}")
+    @Path("/challenge-name/{challengeName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<ChallengeVoteDto>> listByChallengeName(
-        @PathParam("challenge_name") String challengeName
+        @PathParam("challengeName") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)

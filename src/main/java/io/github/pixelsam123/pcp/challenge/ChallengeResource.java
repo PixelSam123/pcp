@@ -93,7 +93,7 @@ public class ChallengeResource {
     public Uni<List<ChallengeBriefDto>> list(
         @QueryParam("tiers") String tiers,
         @QueryParam("username") String username,
-        @QueryParam("sortBy") String sortBy
+        @QueryParam("sort-by") String sortBy
     ) {
         if (tiers == null) tiers = "1,2,3,4,5";
         if (sortBy == null) sortBy = "newest";
@@ -110,7 +110,7 @@ public class ChallengeResource {
     }
 
     @GET
-    @Path("/{name}")
+    @Path("/name/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<ChallengeDto> getByName(@PathParam("name") String name) {
         return challengeRepository

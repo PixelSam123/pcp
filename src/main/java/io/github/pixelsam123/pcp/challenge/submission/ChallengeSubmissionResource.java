@@ -21,10 +21,10 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import java.util.List;
 
 @Tag(
-    name = "challenge_submissions",
+    name = "challenge-submissions",
     description = "Challenge submission creation, viewing and editing"
 )
-@Path("/challenge_submissions")
+@Path("/challenge-submissions")
 public class ChallengeSubmissionResource {
     private final CodeExecService codeExecService;
     private final ChallengeRepository challengeRepository;
@@ -123,10 +123,10 @@ public class ChallengeSubmissionResource {
     }
 
     @GET
-    @Path("/{challenge_name}")
+    @Path("/challenge-name/{challengeName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<ChallengeSubmissionDto>> listByChallengeName(
-        @PathParam("challenge_name") String challengeName
+        @PathParam("challengeName") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)

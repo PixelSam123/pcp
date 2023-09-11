@@ -16,10 +16,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import java.util.List;
 
 @Tag(
-    name = "challenge_comments",
+    name = "challenge-comments",
     description = "Challenge comment creation, viewing and editing"
 )
-@Path("/challenge_comments")
+@Path("/challenge-comments")
 public class ChallengeCommentResource {
     private final ChallengeRepository challengeRepository;
     private final ChallengeCommentRepository challengeCommentRepository;
@@ -71,10 +71,10 @@ public class ChallengeCommentResource {
     }
 
     @GET
-    @Path("/{challenge_name}")
+    @Path("/challenge-name/{challengeName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<ChallengeCommentDto>> listByChallengeName(
-        @PathParam("challenge_name") String challengeName
+        @PathParam("challengeName") String challengeName
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)

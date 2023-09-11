@@ -65,11 +65,11 @@ public class SessionResource {
     }
 
     @GET
-    @Path("/challenge_votes/{challenge_id}")
+    @Path("/challenge-votes/{challengeId}")
     @RolesAllowed({"User"})
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Optional<Boolean>> sessionChallengeIsUpvoteByChallengeId(
-        @PathParam("challenge_id") long challengeId, @Context SecurityContext ctx
+        @PathParam("challengeId") long challengeId, @Context SecurityContext ctx
     ) {
         return challengeVoteRepository.findIsUpvoteByChallengeIdAndUserName(
             challengeId,
@@ -78,11 +78,11 @@ public class SessionResource {
     }
 
     @GET
-    @Path("/challenge_submission_votes/{challenge_submission_id}")
+    @Path("/challenge-submission-votes/{challengeSubmissionId}")
     @RolesAllowed({"User"})
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Optional<Boolean>> sessionChallengeSubmissionIsUpvoteByChallengeSubmissionId(
-        @PathParam("challenge_submission_id") long challengeSubmissionId,
+        @PathParam("challengeSubmissionId") long challengeSubmissionId,
         @Context SecurityContext ctx
     ) {
         return challengeSubmissionVoteRepository.findIsUpvoteByChallengeSubmissionIdAndUserName(

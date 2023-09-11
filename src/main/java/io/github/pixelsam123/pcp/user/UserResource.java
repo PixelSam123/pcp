@@ -50,7 +50,7 @@ public class UserResource {
     }
 
     @GET
-    @Path("/{name}")
+    @Path("/name/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<UserBriefDto> getByName(@PathParam("name") String name) {
         return userRepository
