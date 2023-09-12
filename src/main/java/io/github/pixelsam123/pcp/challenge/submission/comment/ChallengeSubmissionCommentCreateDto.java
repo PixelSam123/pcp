@@ -4,6 +4,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record ChallengeSubmissionCommentCreateDto(
     @NotNull String content,
-    @NotNull long submissionId
+    @NotNull long challengeSubmissionId
 ) {
 }

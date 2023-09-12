@@ -51,7 +51,7 @@ public class ChallengeSubmissionCommentResource {
             )));
 
         Uni<Long> challengeSubmissionCountRetrieval = challengeSubmissionRepository.countById(
-            challengeSubmissionComment.submissionId()
+            challengeSubmissionComment.challengeSubmissionId()
         );
 
         return Uni

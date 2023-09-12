@@ -54,11 +54,11 @@ public class ChallengeSubmissionVoteResource {
             )));
 
         Uni<Long> challengeSubmissionCountRetrieval =
-            challengeSubmissionRepository.countById(challengeSubmissionVote.submissionId());
+            challengeSubmissionRepository.countById(challengeSubmissionVote.challengeSubmissionId());
 
         Uni<Long> challengeSubmissionVoteCountRetrieval = userIdRetrieval.flatMap(
             dbUserId -> challengeSubmissionVoteRepository.countByChallengeSubmissionIdAndUserId(
-                challengeSubmissionVote.submissionId(), dbUserId
+                challengeSubmissionVote.challengeSubmissionId(), dbUserId
             )
         );
 

@@ -72,7 +72,7 @@ public class ChallengeSubmissionCommentRepository {
             ) {
                 statement.setString(1, challengeSubmissionComment.content());
                 statement.setLong(2, userId);
-                statement.setLong(3, challengeSubmissionComment.submissionId());
+                statement.setLong(3, challengeSubmissionComment.challengeSubmissionId());
 
                 if (statement.executeUpdate() < 1) {
                     throw new RuntimeException("Insert error: inserted row count is less than 1");

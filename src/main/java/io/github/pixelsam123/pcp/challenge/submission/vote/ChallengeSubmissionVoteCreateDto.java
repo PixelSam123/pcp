@@ -5,6 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record ChallengeSubmissionVoteCreateDto(
     @JsonProperty("isUpvote") @NotNull boolean isUpvote,
-    @NotNull long submissionId
+    @NotNull long challengeSubmissionId
 ) {
 }

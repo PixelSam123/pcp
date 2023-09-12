@@ -144,7 +144,7 @@ public class ChallengeSubmissionVoteRepository {
             ) {
                 statement.setBoolean(1, challengeSubmissionVote.isUpvote());
                 statement.setLong(2, userId);
-                statement.setLong(3, challengeSubmissionVote.submissionId());
+                statement.setLong(3, challengeSubmissionVote.challengeSubmissionId());
 
                 if (statement.executeUpdate() < 1) {
                     throw new RuntimeException("Insert error: inserted row count is less than 1");
