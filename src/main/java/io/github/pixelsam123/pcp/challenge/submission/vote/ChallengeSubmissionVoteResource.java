@@ -95,12 +95,12 @@ public class ChallengeSubmissionVoteResource {
     }
 
     @GET
-    @Path("/submission-id/{submissionId}")
+    @Path("/challenge-submission-id/{challengeSubmissionId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<List<ChallengeSubmissionVoteDto>> listBySubmissionId(
-        @PathParam("submissionId") long submissionId
+    public Uni<List<ChallengeSubmissionVoteDto>> listByChallengeSubmissionId(
+        @PathParam("challengeSubmissionId") long challengeSubmissionId
     ) {
-        return challengeSubmissionVoteRepository.listByChallengeSubmissionId(submissionId);
+        return challengeSubmissionVoteRepository.listByChallengeSubmissionId(challengeSubmissionId);
     }
 
     @DELETE
