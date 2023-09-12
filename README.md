@@ -10,6 +10,11 @@ Self-hostable coding challenges platform
 - [PixelSam123/pcp_frontend](https://github.com/PixelSam123/pcp_frontend)
 - [PixelSam123/pcp_frontend_web](https://github.com/PixelSam123/pcp_frontend_web)
 
+## Status
+
+Unless there are obvious issues found later, I'm not going to change the API URIs or request/response schemas anymore.  
+Implementation changes might still happen though.
+
 ## Deployment guide
 
 First, build the app with Gradle:
