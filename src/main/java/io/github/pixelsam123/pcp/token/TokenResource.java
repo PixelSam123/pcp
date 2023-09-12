@@ -1,6 +1,6 @@
 package io.github.pixelsam123.pcp.token;
 
-import io.github.pixelsam123.pcp.HttpException;
+import io.github.pixelsam123.pcp.common.HttpException;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.jwt.build.Jwt;
 import io.smallrye.mutiny.Uni;

@@ -1,6 +1,6 @@
 package io.github.pixelsam123.pcp.user;
 
-import io.github.pixelsam123.pcp.Utils;
+import io.github.pixelsam123.pcp.common.Utils;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 

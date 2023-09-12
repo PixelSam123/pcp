@@ -1,6 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.submission.vote;
 
-import io.github.pixelsam123.pcp.Utils;
+import io.github.pixelsam123.pcp.common.Utils;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;

@@ -1,4 +1,4 @@
-package io.github.pixelsam123.pcp;
+package io.github.pixelsam123.pcp.common;
 
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;

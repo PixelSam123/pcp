@@ -5,6 +5,7 @@ import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.challenge.ChallengeSort;
 import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVoteRepository;
 import io.github.pixelsam123.pcp.challenge.vote.ChallengeVoteRepository;
+import io.github.pixelsam123.pcp.common.HttpException;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;

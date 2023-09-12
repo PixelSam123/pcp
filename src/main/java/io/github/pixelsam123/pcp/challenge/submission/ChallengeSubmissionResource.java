@@ -1,6 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.submission;
 
-import io.github.pixelsam123.pcp.HttpException;
+import io.github.pixelsam123.pcp.common.HttpException;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.challenge.ChallengeVerifierView;
 import io.github.pixelsam123.pcp.code.exec.CodeExecRequest;

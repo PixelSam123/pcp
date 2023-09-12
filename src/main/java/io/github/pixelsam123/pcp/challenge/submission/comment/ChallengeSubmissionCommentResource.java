@@ -1,6 +1,6 @@
 package io.github.pixelsam123.pcp.challenge.submission.comment;
 
-import io.github.pixelsam123.pcp.HttpException;
+import io.github.pixelsam123.pcp.common.HttpException;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;

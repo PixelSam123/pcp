@@ -1,7 +1,7 @@
 package io.github.pixelsam123.pcp.challenge;
 
-import io.github.pixelsam123.pcp.HttpException;
-import io.github.pixelsam123.pcp.Utils;
+import io.github.pixelsam123.pcp.common.HttpException;
+import io.github.pixelsam123.pcp.common.Utils;
 import io.github.pixelsam123.pcp.code.exec.CodeExecRequest;
 import io.github.pixelsam123.pcp.code.exec.CodeExecResponse;
 import io.github.pixelsam123.pcp.code.exec.CodeExecService;

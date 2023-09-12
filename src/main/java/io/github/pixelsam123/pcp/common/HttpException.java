@@ -1,4 +1,4 @@
-package io.github.pixelsam123.pcp;
+package io.github.pixelsam123.pcp.common;
 
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;

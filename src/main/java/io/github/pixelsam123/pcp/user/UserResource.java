@@ -1,6 +1,6 @@
 package io.github.pixelsam123.pcp.user;
 
-import io.github.pixelsam123.pcp.HttpException;
+import io.github.pixelsam123.pcp.common.HttpException;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.ws.rs.*;
