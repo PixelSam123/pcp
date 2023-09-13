@@ -155,7 +155,7 @@ public class ChallengeSubmissionVoteRepository {
         });
     }
 
-    public Uni<Void> deleteById(Long id) {
+    public Uni<Void> deleteById(long id) {
         return Utils.runInWorkerPool(() -> {
             try (
                 Connection c = dataSource.getConnection();
