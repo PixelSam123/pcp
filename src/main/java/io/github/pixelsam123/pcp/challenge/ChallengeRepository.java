@@ -120,6 +120,39 @@ public class ChallengeRepository {
         });
     }
 
+    public Uni<Optional<ChallengeCreateDto>> findCreateDtoByNameAndUserName(
+        String name,
+        String userName
+    ) {
+        return Utils.runInWorkerPool(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT c.name, c.tier, c.description, c.initial_code, c.test_case "
+                        + "FROM challenge c JOIN user u on c.user_id = u.id "
+                        + "WHERE c.name = ? AND u.name = ?"
+                )
+            ) {
+                statement.setString(1, name);
+                statement.setString(2, userName);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(new ChallengeCreateDto(
+                    res.getString("name"),
+                    res.getInt("tier"),
+                    res.getString("description"),
+                    res.getString("initial_code"),
+                    res.getString("test_case"),
+                    ""
+                ));
+            }
+        });
+    }
+
     public Uni<Optional<ChallengeDto>> findDtoByName(String name) {
         return Utils.runInWorkerPool(() -> {
             try (
