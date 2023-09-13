@@ -120,7 +120,7 @@ public class ChallengeRepository {
         });
     }
 
-    public Uni<Optional<ChallengeCreateDto>> findCreateDtoByNameAndUserName(
+    public Uni<Optional<ChallengeSecuredDto>> findSecuredDtoByNameAndUserName(
         String name,
         String userName
     ) {
@@ -128,7 +128,7 @@ public class ChallengeRepository {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT c.name, c.tier, c.description, c.initial_code, c.test_case "
+                    "SELECT c.id, c.name, c.tier, c.description, c.initial_code, c.test_case "
                         + "FROM challenge c JOIN user u on c.user_id = u.id "
                         + "WHERE c.name = ? AND u.name = ?"
                 )
@@ -141,13 +141,13 @@ public class ChallengeRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(new ChallengeCreateDto(
-                    res.getString("name"),
-                    res.getInt("tier"),
-                    res.getString("description"),
-                    res.getString("initial_code"),
-                    res.getString("test_case"),
-                    ""
+                return Optional.of(new ChallengeSecuredDto(
+                    res.getLong("c.id"),
+                    res.getString("c.name"),
+                    res.getInt("c.tier"),
+                    res.getString("c.description"),
+                    res.getString("c.initial_code"),
+                    res.getString("c.test_case")
                 ));
             }
         });
@@ -294,6 +294,32 @@ public class ChallengeRepository {
 
                 if (statement.executeUpdate() < 1) {
                     throw new RuntimeException("Insert error: inserted row count is less than 1");
+                }
+
+                return null;
+            }
+        });
+    }
+
+    public Uni<Void> updateById(ChallengeCreateDto challenge, long id) {
+        return Utils.runInWorkerPool(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "UPDATE challenge "
+                        + "SET name = ?, tier = ?, description = ?, initial_code = ?, test_case = ? "
+                        + "WHERE id = ?"
+                )
+            ) {
+                statement.setString(1, challenge.name());
+                statement.setInt(2, challenge.tier());
+                statement.setString(3, challenge.description());
+                statement.setString(4, challenge.initialCode());
+                statement.setString(5, challenge.testCase());
+                statement.setLong(6, id);
+
+                if (statement.executeUpdate() < 1) {
+                    throw new RuntimeException("Update error: updated row count is less than 1");
                 }
 
                 return null;

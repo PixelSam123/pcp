@@ -120,6 +120,47 @@ public class ChallengeResource {
             ));
     }
 
+    @PUT
+    @Path("/{id}")
+    @RolesAllowed({"User"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Void> update(
+        @PathParam("id") long id,
+        ChallengeCreateDto challenge,
+        @Context SecurityContext ctx
+    ) {
+        Uni<Long> userIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                "User of your credentials doesn't exist"
+            )));
+
+        Uni<Long> challengeUserIdRetrieval = challengeRepository
+            .findUserIdById(id)
+            .map(dbChallengeUserId -> dbChallengeUserId.orElseThrow(
+                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+            ));
+
+        return Uni
+            .combine()
+            .all()
+            .unis(userIdRetrieval, challengeUserIdRetrieval)
+            .asTuple()
+            .map(Utils::areItemsEqual)
+            .flatMap(Unchecked.function(areIdsEqual -> {
+                if (FALSE.equals(areIdsEqual)) {
+                    throw new HttpException(
+                        Response.Status.FORBIDDEN,
+                        "Not allowed to edit on another user's behalf"
+                    );
+                }
+
+                return challengeRepository.updateById(challenge, id);
+            }));
+    }
+
     @DELETE
     @RolesAllowed({"User"})
     @Path("/{id}")

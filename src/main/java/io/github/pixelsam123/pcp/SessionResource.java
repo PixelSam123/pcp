@@ -1,9 +1,6 @@
 package io.github.pixelsam123.pcp;
 
-import io.github.pixelsam123.pcp.challenge.ChallengeBriefDto;
-import io.github.pixelsam123.pcp.challenge.ChallengeCreateDto;
-import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
-import io.github.pixelsam123.pcp.challenge.ChallengeSort;
+import io.github.pixelsam123.pcp.challenge.*;
 import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVoteRepository;
 import io.github.pixelsam123.pcp.challenge.vote.ChallengeVoteRepository;
 import io.github.pixelsam123.pcp.common.HttpException;
@@ -71,12 +68,12 @@ public class SessionResource {
     @RolesAllowed({"User"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<ChallengeCreateDto> sessionChallenge(
+    public Uni<ChallengeSecuredDto> sessionChallenge(
         @PathParam("name") String name,
         @Context SecurityContext ctx
     ) {
         return challengeRepository
-            .findCreateDtoByNameAndUserName(name, ctx.getUserPrincipal().getName())
+            .findSecuredDtoByNameAndUserName(name, ctx.getUserPrincipal().getName())
             .map(dbChallenge -> dbChallenge.orElseThrow(() -> new HttpException(
                 Response.Status.NOT_FOUND,
                 "Challenge under your username Not Found"
