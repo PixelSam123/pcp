@@ -68,7 +68,7 @@ public class ChallengeVoteRepository {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT cv.is_upvote FROM challenge_vote cv JOIN user u on cv.user_id = u.id "
+                    "SELECT cv.is_upvote FROM challenge_vote cv JOIN user u ON cv.user_id = u.id "
                         + "WHERE cv.challenge_id = ? AND u.name = ?"
                 )
             ) {

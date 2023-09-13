@@ -73,7 +73,7 @@ public class ChallengeSubmissionVoteRepository {
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
                     "SELECT csv.is_upvote FROM challenge_submission_vote csv "
-                        + "JOIN user u on csv.user_id = u.id "
+                        + "JOIN user u ON csv.user_id = u.id "
                         + "WHERE csv.challenge_submission_id = ? AND u.name = ?"
                 )
             ) {
