@@ -4,7 +4,9 @@ import io.github.pixelsam123.pcp.challenge.ChallengeBriefDto;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
 import io.github.pixelsam123.pcp.challenge.ChallengeSecuredDto;
 import io.github.pixelsam123.pcp.challenge.ChallengeSort;
+import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVoteDto;
 import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVoteRepository;
+import io.github.pixelsam123.pcp.challenge.vote.ChallengeVoteDto;
 import io.github.pixelsam123.pcp.challenge.vote.ChallengeVoteRepository;
 import io.github.pixelsam123.pcp.common.ErrorMessages;
 import io.github.pixelsam123.pcp.common.HttpException;
@@ -85,26 +87,13 @@ public class SessionResource {
     }
 
     @GET
-    @Path("/challenge-votes/{challengeId}")
-    @RolesAllowed({"User"})
-    @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Optional<Boolean>> sessionChallengeIsUpvoteByChallengeId(
-        @PathParam("challengeId") long challengeId, @Context SecurityContext ctx
-    ) {
-        return challengeVoteRepository.findIsUpvoteByChallengeIdAndUserName(
-            challengeId,
-            ctx.getUserPrincipal().getName()
-        );
-    }
-
-    @GET
     @Path("/challenge-votes/name/{challengeName}")
     @RolesAllowed({"User"})
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Optional<Boolean>> sessionChallengeIsUpvoteByChallengeName(
+    public Uni<Optional<ChallengeVoteDto>> sessionChallengeVoteByChallengeName(
         @PathParam("challengeName") String challengeName, @Context SecurityContext ctx
     ) {
-        return challengeVoteRepository.findIsUpvoteByChallengeNameAndUserName(
+        return challengeVoteRepository.findByChallengeNameAndUserName(
             challengeName,
             ctx.getUserPrincipal().getName()
         );
@@ -114,11 +103,11 @@ public class SessionResource {
     @Path("/challenge-submission-votes/{challengeSubmissionId}")
     @RolesAllowed({"User"})
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Optional<Boolean>> sessionChallengeSubmissionIsUpvoteByChallengeSubmissionId(
+    public Uni<Optional<ChallengeSubmissionVoteDto>> sessionChallengeSubmissionVoteByChallengeSubmissionId(
         @PathParam("challengeSubmissionId") long challengeSubmissionId,
         @Context SecurityContext ctx
     ) {
-        return challengeSubmissionVoteRepository.findIsUpvoteByChallengeSubmissionIdAndUserName(
+        return challengeSubmissionVoteRepository.findByChallengeSubmissionIdAndUserName(
             challengeSubmissionId,
             ctx.getUserPrincipal().getName()
         );

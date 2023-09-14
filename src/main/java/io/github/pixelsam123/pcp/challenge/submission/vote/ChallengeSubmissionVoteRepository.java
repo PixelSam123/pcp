@@ -64,7 +64,7 @@ public class ChallengeSubmissionVoteRepository {
         });
     }
 
-    public Uni<Optional<Boolean>> findIsUpvoteByChallengeSubmissionIdAndUserName(
+    public Uni<Optional<ChallengeSubmissionVoteDto>> findByChallengeSubmissionIdAndUserName(
         long challengeSubmissionId,
         String userName
     ) {
@@ -72,7 +72,8 @@ public class ChallengeSubmissionVoteRepository {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT csv.is_upvote FROM challenge_submission_vote csv "
+                    "SELECT csv.id, csv.is_upvote, u.id, u.name, u.points "
+                        + "FROM challenge_submission_vote csv "
                         + "JOIN user u ON csv.user_id = u.id "
                         + "WHERE csv.challenge_submission_id = ? AND u.name = ?"
                 )
@@ -85,7 +86,15 @@ public class ChallengeSubmissionVoteRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(res.getBoolean("csv.is_upvote"));
+                return Optional.of(new ChallengeSubmissionVoteDto(
+                    res.getLong("csv.id"),
+                    res.getBoolean("csv.is_upvote"),
+                    new UserBriefDto(
+                        res.getLong("u.id"),
+                        res.getString("u.name"),
+                        res.getInt("u.points")
+                    )
+                ));
             }
         });
     }

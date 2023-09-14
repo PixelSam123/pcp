@@ -60,32 +60,7 @@ public class ChallengeVoteRepository {
         });
     }
 
-    public Uni<Optional<Boolean>> findIsUpvoteByChallengeIdAndUserName(
-        long challengeId,
-        String userName
-    ) {
-        return Utils.runInWorkerPool(() -> {
-            try (
-                Connection c = dataSource.getConnection();
-                PreparedStatement statement = c.prepareStatement(
-                    "SELECT cv.is_upvote FROM challenge_vote cv JOIN user u ON cv.user_id = u.id "
-                        + "WHERE cv.challenge_id = ? AND u.name = ?"
-                )
-            ) {
-                statement.setLong(1, challengeId);
-                statement.setString(2, userName);
-
-                ResultSet res = statement.executeQuery();
-                if (!res.next()) {
-                    return Optional.empty();
-                }
-
-                return Optional.of(res.getBoolean("cv.is_upvote"));
-            }
-        });
-    }
-
-    public Uni<Optional<Boolean>> findIsUpvoteByChallengeNameAndUserName(
+    public Uni<Optional<ChallengeVoteDto>> findByChallengeNameAndUserName(
         String challengeName,
         String userName
     ) {
@@ -93,7 +68,7 @@ public class ChallengeVoteRepository {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT cv.is_upvote FROM challenge_vote cv "
+                    "SELECT cv.id, cv.is_upvote, u.id, u.name, u.points FROM challenge_vote cv "
                         + "JOIN challenge c ON cv.challenge_id = c.id "
                         + "JOIN user u ON cv.user_id = u.id "
                         + "WHERE c.name = ? AND u.name = ?"
@@ -107,7 +82,15 @@ public class ChallengeVoteRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(res.getBoolean("cv.is_upvote"));
+                return Optional.of(new ChallengeVoteDto(
+                    res.getLong("cv.id"),
+                    res.getBoolean("cv.is_upvote"),
+                    new UserBriefDto(
+                        res.getLong("u.id"),
+                        res.getString("u.name"),
+                        res.getInt("u.points")
+                    )
+                ));
             }
         });
     }
