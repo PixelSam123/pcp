@@ -143,17 +143,34 @@ public class ChallengeResource {
                 () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
             ));
 
+        Uni<CodeExecResponse> codeExecRetrieval = codeExecService.getCodeExecResult(
+            new CodeExecRequest(
+                "js",
+                challenge.codeForVerification() + '\n' + challenge.testCase()
+            )
+        );
+
         return Uni
             .combine()
             .all()
-            .unis(userIdRetrieval, challengeUserIdRetrieval)
+            .unis(userIdRetrieval, challengeUserIdRetrieval, codeExecRetrieval)
             .asTuple()
-            .map(Utils::areItemsEqual)
-            .flatMap(Unchecked.function(areIdsEqual -> {
-                if (FALSE.equals(areIdsEqual)) {
+            .flatMap(Unchecked.function(tuple -> {
+                long dbUserId = tuple.getItem1();
+                long dbChallengeUserId = tuple.getItem2();
+                CodeExecResponse codeExec = tuple.getItem3();
+
+                if (dbUserId != dbChallengeUserId) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
                         "Not allowed to edit on another user's behalf"
+                    );
+                }
+
+                if (codeExec.status() != 0) {
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "Verification code execution error:\n" + codeExec.output()
                     );
                 }
 
