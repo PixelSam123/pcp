@@ -100,6 +100,13 @@ public class ChallengeResource {
         if (tiers == null) tiers = "1,2,3,4,5";
         if (sortBy == null) sortBy = "newest";
 
+        if (tiers.isBlank()) {
+            throw new HttpException(
+                Response.Status.BAD_REQUEST,
+                "Please select at least one tier or remove the tiers query parameter."
+            );
+        }
+
         List<Integer> tierList = Arrays.stream(tiers.split(",")).map(Integer::parseInt).toList();
         ChallengeSort sort = switch (sortBy) {
             case "oldest" -> ChallengeSort.OLDEST;

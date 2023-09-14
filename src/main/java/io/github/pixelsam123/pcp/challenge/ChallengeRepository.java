@@ -219,7 +219,7 @@ public class ChallengeRepository {
                         + "u.name, "
                         + "u.points "
                         + "FROM challenge c JOIN user u ON c.user_id = u.id "
-                        + "WHERE ? IS NULL OR u.name = ? AND c.tier IN ("
+                        + "WHERE (? IS NULL OR u.name = ?) AND c.tier IN ("
                         + questionMarks.substring(0, questionMarks.length() - ", ".length())
                         + ") "
                         + sort.sql
