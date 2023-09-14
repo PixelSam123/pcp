@@ -1,8 +1,10 @@
 package io.github.pixelsam123.pcp.challenge.submission.vote;
 
-import io.github.pixelsam123.pcp.common.HttpException;
-import io.github.pixelsam123.pcp.common.Utils;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
+import io.github.pixelsam123.pcp.common.ErrorMessages;
+import io.github.pixelsam123.pcp.common.HttpException;
+import io.github.pixelsam123.pcp.common.NotFoundException;
+import io.github.pixelsam123.pcp.common.Utils;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -50,7 +52,7 @@ public class ChallengeSubmissionVoteResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                 Response.Status.BAD_REQUEST,
-                "User of your credentials doesn't exist"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
 
         Uni<Long> challengeSubmissionCountRetrieval =
@@ -113,13 +115,13 @@ public class ChallengeSubmissionVoteResource {
                 .findIdByName(ctx.getUserPrincipal().getName())
                 .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                     Response.Status.BAD_REQUEST,
-                    "User of your credentials doesn't exist"
+                    ErrorMessages.CREDENTIALS_MISMATCH
                 )));
 
         Uni<Long> challengeSubmissionVoteUserIdRetrieval = challengeSubmissionVoteRepository
             .findUserIdById(id)
             .map(dbChallengeSubmissionVoteUserId -> dbChallengeSubmissionVoteUserId.orElseThrow(
-                () -> new HttpException(Response.Status.NOT_FOUND, "Submission Vote Not Found")
+                () -> new NotFoundException("Submission Vote")
             ));
 
         return Uni
@@ -132,7 +134,7 @@ public class ChallengeSubmissionVoteResource {
                 if (FALSE.equals(areIdsEqual)) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
-                        "Not allowed to delete on another user's behalf"
+                        ErrorMessages.NO_DELETE_PERMISSION
                     );
                 }
 

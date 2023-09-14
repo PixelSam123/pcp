@@ -1,6 +1,7 @@
 package io.github.pixelsam123.pcp.user;
 
 import io.github.pixelsam123.pcp.common.HttpException;
+import io.github.pixelsam123.pcp.common.NotFoundException;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.ws.rs.*;
@@ -55,8 +56,6 @@ public class UserResource {
     public Uni<UserBriefDto> getByName(@PathParam("name") String name) {
         return userRepository
             .findBriefByName(name)
-            .map(dbUser -> dbUser.orElseThrow(
-                () -> new HttpException(Response.Status.NOT_FOUND, "User not found")
-            ));
+            .map(dbUser -> dbUser.orElseThrow(() -> new NotFoundException("User")));
     }
 }

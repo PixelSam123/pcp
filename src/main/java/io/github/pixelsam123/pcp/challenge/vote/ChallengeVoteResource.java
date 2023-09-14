@@ -1,8 +1,10 @@
 package io.github.pixelsam123.pcp.challenge.vote;
 
-import io.github.pixelsam123.pcp.common.HttpException;
-import io.github.pixelsam123.pcp.common.Utils;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
+import io.github.pixelsam123.pcp.common.ErrorMessages;
+import io.github.pixelsam123.pcp.common.HttpException;
+import io.github.pixelsam123.pcp.common.NotFoundException;
+import io.github.pixelsam123.pcp.common.Utils;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -44,7 +46,7 @@ public class ChallengeVoteResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                 Response.Status.BAD_REQUEST,
-                "User of your credentials doesn't exist"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
 
         Uni<Long> challengeCountRetrieval =
@@ -90,7 +92,7 @@ public class ChallengeVoteResource {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)
             .map(dbChallengeId -> dbChallengeId.orElseThrow(
-                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+                () -> new NotFoundException("Challenge")
             ));
 
         return challengeIdRetrieval.flatMap(challengeVoteRepository::listByChallengeId);
@@ -105,13 +107,13 @@ public class ChallengeVoteResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                 Response.Status.BAD_REQUEST,
-                "User of your credentials doesn't exist"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
 
         Uni<Long> challengeVoteUserIdRetrieval = challengeVoteRepository
             .findUserIdById(id)
             .map(dbChallengeVoteUserId -> dbChallengeVoteUserId.orElseThrow(
-                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Vote Not Found")
+                () -> new NotFoundException("Challenge Vote")
             ));
 
         return Uni
@@ -124,7 +126,7 @@ public class ChallengeVoteResource {
                 if (FALSE.equals(areIdsEqual)) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
-                        "Not allowed to delete on another user's behalf"
+                        ErrorMessages.NO_DELETE_PERMISSION
                     );
                 }
 

@@ -1,7 +1,9 @@
 package io.github.pixelsam123.pcp.challenge.comment;
 
-import io.github.pixelsam123.pcp.common.HttpException;
 import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
+import io.github.pixelsam123.pcp.common.ErrorMessages;
+import io.github.pixelsam123.pcp.common.HttpException;
+import io.github.pixelsam123.pcp.common.NotFoundException;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -47,7 +49,7 @@ public class ChallengeCommentResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                 Response.Status.BAD_REQUEST,
-                "User of your credentials doesn't exist"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
 
         Uni<Long> challengeCountRetrieval =
@@ -78,8 +80,8 @@ public class ChallengeCommentResource {
     ) {
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)
-            .map(dbChallenge -> dbChallenge.orElseThrow(
-                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+            .map(dbChallengeId -> dbChallengeId.orElseThrow(
+                () -> new NotFoundException("Challenge")
             ));
 
         return challengeIdRetrieval.flatMap(challengeCommentRepository::listByChallengeId);

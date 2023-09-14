@@ -1,7 +1,8 @@
 package io.github.pixelsam123.pcp.challenge.submission.comment;
 
-import io.github.pixelsam123.pcp.common.HttpException;
 import io.github.pixelsam123.pcp.challenge.submission.ChallengeSubmissionRepository;
+import io.github.pixelsam123.pcp.common.ErrorMessages;
+import io.github.pixelsam123.pcp.common.HttpException;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -47,7 +48,7 @@ public class ChallengeSubmissionCommentResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                 Response.Status.BAD_REQUEST,
-                "User of your credentials doesn't exist"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
 
         Uni<Long> challengeSubmissionCountRetrieval = challengeSubmissionRepository.countById(

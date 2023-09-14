@@ -1,9 +1,14 @@
 package io.github.pixelsam123.pcp;
 
-import io.github.pixelsam123.pcp.challenge.*;
+import io.github.pixelsam123.pcp.challenge.ChallengeBriefDto;
+import io.github.pixelsam123.pcp.challenge.ChallengeRepository;
+import io.github.pixelsam123.pcp.challenge.ChallengeSecuredDto;
+import io.github.pixelsam123.pcp.challenge.ChallengeSort;
 import io.github.pixelsam123.pcp.challenge.submission.vote.ChallengeSubmissionVoteRepository;
 import io.github.pixelsam123.pcp.challenge.vote.ChallengeVoteRepository;
+import io.github.pixelsam123.pcp.common.ErrorMessages;
 import io.github.pixelsam123.pcp.common.HttpException;
+import io.github.pixelsam123.pcp.common.NotFoundException;
 import io.github.pixelsam123.pcp.user.UserBriefDto;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
@@ -47,7 +52,7 @@ public class SessionResource {
             .findBriefByName(ctx.getUserPrincipal().getName())
             .map(dbUser -> dbUser.orElseThrow(() -> new HttpException(
                 Response.Status.NOT_FOUND,
-                "Username of your session is not found"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
     }
 
@@ -74,9 +79,8 @@ public class SessionResource {
     ) {
         return challengeRepository
             .findSecuredDtoByNameAndUserName(name, ctx.getUserPrincipal().getName())
-            .map(dbChallenge -> dbChallenge.orElseThrow(() -> new HttpException(
-                Response.Status.NOT_FOUND,
-                "Challenge under your username Not Found"
+            .map(dbChallenge -> dbChallenge.orElseThrow(() -> new NotFoundException(
+                "Challenge under your username"
             )));
     }
 

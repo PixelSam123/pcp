@@ -1,10 +1,12 @@
 package io.github.pixelsam123.pcp.challenge;
 
-import io.github.pixelsam123.pcp.common.HttpException;
-import io.github.pixelsam123.pcp.common.Utils;
 import io.github.pixelsam123.pcp.code.exec.CodeExecRequest;
 import io.github.pixelsam123.pcp.code.exec.CodeExecResponse;
 import io.github.pixelsam123.pcp.code.exec.CodeExecService;
+import io.github.pixelsam123.pcp.common.ErrorMessages;
+import io.github.pixelsam123.pcp.common.HttpException;
+import io.github.pixelsam123.pcp.common.NotFoundException;
+import io.github.pixelsam123.pcp.common.Utils;
 import io.github.pixelsam123.pcp.user.UserRepository;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
@@ -48,7 +50,7 @@ public class ChallengeResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                 Response.Status.BAD_REQUEST,
-                "User of your credentials doesn't exist"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
 
         Uni<Long> challengeCountRetrieval = challengeRepository.countByName(challenge.name());
@@ -115,9 +117,7 @@ public class ChallengeResource {
     public Uni<ChallengeDto> getByName(@PathParam("name") String name) {
         return challengeRepository
             .findDtoByName(name)
-            .map(dbChallenge -> dbChallenge.orElseThrow(
-                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge not found")
-            ));
+            .map(dbChallenge -> dbChallenge.orElseThrow(() -> new NotFoundException("Challenge")));
     }
 
     @PUT
@@ -134,13 +134,13 @@ public class ChallengeResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                 Response.Status.BAD_REQUEST,
-                "User of your credentials doesn't exist"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
 
         Uni<Long> challengeUserIdRetrieval = challengeRepository
             .findUserIdById(id)
             .map(dbChallengeUserId -> dbChallengeUserId.orElseThrow(
-                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+                () -> new NotFoundException("Challenge")
             ));
 
         Uni<CodeExecResponse> codeExecRetrieval = codeExecService.getCodeExecResult(
@@ -163,7 +163,7 @@ public class ChallengeResource {
                 if (dbUserId != dbChallengeUserId) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
-                        "Not allowed to edit on another user's behalf"
+                        ErrorMessages.NO_EDIT_PERMISSION
                     );
                 }
 
@@ -187,13 +187,13 @@ public class ChallengeResource {
             .findIdByName(ctx.getUserPrincipal().getName())
             .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
                 Response.Status.BAD_REQUEST,
-                "User of your credentials doesn't exist"
+                ErrorMessages.CREDENTIALS_MISMATCH
             )));
 
         Uni<Long> challengeUserIdRetrieval = challengeRepository
             .findUserIdById(id)
             .map(dbChallengeUserId -> dbChallengeUserId.orElseThrow(
-                () -> new HttpException(Response.Status.NOT_FOUND, "Challenge Not Found")
+                () -> new NotFoundException("Challenge")
             ));
 
         return Uni
@@ -206,7 +206,7 @@ public class ChallengeResource {
                 if (FALSE.equals(areIdsEqual)) {
                     throw new HttpException(
                         Response.Status.FORBIDDEN,
-                        "Not allowed to delete on another user's behalf"
+                        ErrorMessages.NO_DELETE_PERMISSION
                     );
                 }
 
