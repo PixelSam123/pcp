@@ -130,18 +130,8 @@ public class ChallengeResource {
         ChallengeCreateDto challenge,
         @Context SecurityContext ctx
     ) {
-        Uni<Long> userIdRetrieval = userRepository
-            .findIdByName(ctx.getUserPrincipal().getName())
-            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
-                Response.Status.BAD_REQUEST,
-                ErrorMessages.CREDENTIALS_MISMATCH
-            )));
-
-        Uni<Long> challengeUserIdRetrieval = challengeRepository
-            .findUserIdById(id)
-            .map(dbChallengeUserId -> dbChallengeUserId.orElseThrow(
-                () -> new NotFoundException("Challenge")
-            ));
+        Uni<Long> userIdRetrieval = retrieveUserIdByUserName(ctx.getUserPrincipal().getName());
+        Uni<Long> challengeUserIdRetrieval = retrieveChallengeUserIdByChallengeId(id);
 
         Uni<CodeExecResponse> codeExecRetrieval = codeExecService.getCodeExecResult(
             new CodeExecRequest(
@@ -183,18 +173,8 @@ public class ChallengeResource {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Void> delete(@PathParam("id") long id, @Context SecurityContext ctx) {
-        Uni<Long> userIdRetrieval = userRepository
-            .findIdByName(ctx.getUserPrincipal().getName())
-            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
-                Response.Status.BAD_REQUEST,
-                ErrorMessages.CREDENTIALS_MISMATCH
-            )));
-
-        Uni<Long> challengeUserIdRetrieval = challengeRepository
-            .findUserIdById(id)
-            .map(dbChallengeUserId -> dbChallengeUserId.orElseThrow(
-                () -> new NotFoundException("Challenge")
-            ));
+        Uni<Long> userIdRetrieval = retrieveUserIdByUserName(ctx.getUserPrincipal().getName());
+        Uni<Long> challengeUserIdRetrieval = retrieveChallengeUserIdByChallengeId(id);
 
         return Utils
             .areUniItemsEqual(userIdRetrieval, challengeUserIdRetrieval)
@@ -208,5 +188,22 @@ public class ChallengeResource {
 
                 return challengeRepository.deleteById(id);
             }));
+    }
+
+    private Uni<Long> retrieveUserIdByUserName(String userName) {
+        return userRepository
+            .findIdByName(userName)
+            .map(dbUserId -> dbUserId.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                ErrorMessages.CREDENTIALS_MISMATCH
+            )));
+    }
+
+    private Uni<Long> retrieveChallengeUserIdByChallengeId(long challengeId) {
+        return challengeRepository
+            .findUserIdById(challengeId)
+            .map(dbChallengeUserId -> dbChallengeUserId.orElseThrow(
+                () -> new NotFoundException("Challenge")
+            ));
     }
 }
