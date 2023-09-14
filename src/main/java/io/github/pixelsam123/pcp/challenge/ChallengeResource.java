@@ -196,12 +196,8 @@ public class ChallengeResource {
                 () -> new NotFoundException("Challenge")
             ));
 
-        return Uni
-            .combine()
-            .all()
-            .unis(userIdRetrieval, challengeUserIdRetrieval)
-            .asTuple()
-            .map(Utils::areItemsEqual)
+        return Utils
+            .areUniItemsEqual(userIdRetrieval, challengeUserIdRetrieval)
             .flatMap(Unchecked.function(areIdsEqual -> {
                 if (FALSE.equals(areIdsEqual)) {
                     throw new HttpException(

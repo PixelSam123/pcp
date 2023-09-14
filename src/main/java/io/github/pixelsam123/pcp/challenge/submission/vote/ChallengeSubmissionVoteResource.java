@@ -124,12 +124,8 @@ public class ChallengeSubmissionVoteResource {
                 () -> new NotFoundException("Submission Vote")
             ));
 
-        return Uni
-            .combine()
-            .all()
-            .unis(userIdRetrieval, challengeSubmissionVoteUserIdRetrieval)
-            .asTuple()
-            .map(Utils::areItemsEqual)
+        return Utils
+            .areUniItemsEqual(userIdRetrieval, challengeSubmissionVoteUserIdRetrieval)
             .flatMap(Unchecked.function(areIdsEqual -> {
                 if (FALSE.equals(areIdsEqual)) {
                     throw new HttpException(
