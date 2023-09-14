@@ -85,6 +85,33 @@ public class ChallengeVoteRepository {
         });
     }
 
+    public Uni<Optional<Boolean>> findIsUpvoteByChallengeNameAndUserName(
+        String challengeName,
+        String userName
+    ) {
+        return Utils.runInWorkerPool(() -> {
+            try (
+                Connection c = dataSource.getConnection();
+                PreparedStatement statement = c.prepareStatement(
+                    "SELECT cv.is_upvote FROM challenge_vote cv "
+                        + "JOIN challenge c ON cv.challenge_id = c.id "
+                        + "JOIN user u ON cv.user_id = u.id "
+                        + "WHERE c.name = ? AND u.name = ?"
+                )
+            ) {
+                statement.setString(1, challengeName);
+                statement.setString(2, userName);
+
+                ResultSet res = statement.executeQuery();
+                if (!res.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(res.getBoolean("cv.is_upvote"));
+            }
+        });
+    }
+
     public Uni<List<ChallengeVoteDto>> listByChallengeId(long challengeId) {
         return Utils.runInWorkerPool(() -> {
             try (

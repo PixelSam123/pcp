@@ -98,6 +98,19 @@ public class SessionResource {
     }
 
     @GET
+    @Path("/challenge-votes/name/{challengeName}")
+    @RolesAllowed({"User"})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Optional<Boolean>> sessionChallengeIsUpvoteByChallengeName(
+        @PathParam("challengeName") String challengeName, @Context SecurityContext ctx
+    ) {
+        return challengeVoteRepository.findIsUpvoteByChallengeNameAndUserName(
+            challengeName,
+            ctx.getUserPrincipal().getName()
+        );
+    }
+
+    @GET
     @Path("/challenge-submission-votes/{challengeSubmissionId}")
     @RolesAllowed({"User"})
     @Produces(MediaType.APPLICATION_JSON)
