@@ -24,11 +24,9 @@ First, build the app with Gradle:
 ```
 
 Then, prepare public and private key pairs.  
-The location to put these in are WIP (both are currently configured to be at `src/main/resources`)
+This will be put in the environment variables file.
 
 ```
-cd src/main/resources
-
 openssl genrsa -out rsaPrivateKey.pem 2048
 openssl rsa -pubout -in rsaPrivateKey.pem -out publicKey.pem
 
@@ -39,6 +37,9 @@ rm rsaPrivateKey.pem
 You need to run the app with these environment variables, either from the command line or a `.env` file.
 
 ```
+MP_JWT_VERIFY_PUBLICKEY=
+SMALLRYE_JWT_SIGN_KEY=
+
 QUARKUS_DATASOURCE_DB_KIND=
 QUARKUS_DATASOURCE_JDBC_URL=
 QUARKUS_DATASOURCE_USERNAME=
