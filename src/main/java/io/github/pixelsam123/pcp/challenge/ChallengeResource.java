@@ -79,6 +79,13 @@ public class ChallengeResource {
                     );
                 }
 
+                if (!challenge.name().matches("[a-zA-Z0-9 ]+")) {
+                    throw new HttpException(
+                        Response.Status.BAD_REQUEST,
+                        "Challenge name must be alphanumeric or space"
+                    );
+                }
+
                 if (codeExec.status() != 0) {
                     throw new HttpException(
                         Response.Status.BAD_REQUEST,
