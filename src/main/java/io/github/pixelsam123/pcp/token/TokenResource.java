@@ -67,7 +67,8 @@ public class TokenResource {
                         )
                         .maxAge(tokenMinutesDuration * 60)
                         .httpOnly(true)
-                        .sameSite(NewCookie.SameSite.STRICT)
+                        .sameSite(NewCookie.SameSite.NONE)
+                        .secure(true)
                         .build())
                     .build();
             }));

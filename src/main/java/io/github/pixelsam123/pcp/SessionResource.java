@@ -130,7 +130,8 @@ public class SessionResource {
                     .expiry(Date.from(Instant.EPOCH))
                     .maxAge(0)
                     .httpOnly(true)
-                    .sameSite(NewCookie.SameSite.STRICT)
+                    .sameSite(NewCookie.SameSite.NONE)
+                    .secure(true)
                     .build())
                 .build());
     }
