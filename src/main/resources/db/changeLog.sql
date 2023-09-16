@@ -73,3 +73,19 @@ CREATE TABLE challenge_submission_vote
     KEY (user_id),
     KEY (challenge_submission_id)
 );
+
+-- changeset pixelsam123:2
+-- comment: enlarge some VARCHAR(255) types to TEXT
+ALTER TABLE challenge
+    MODIFY COLUMN description TEXT NOT NULL,
+    MODIFY COLUMN initial_code TEXT NOT NULL,
+    MODIFY COLUMN test_case TEXT NOT NULL;
+
+ALTER TABLE challenge_comment
+    MODIFY COLUMN content TEXT NOT NULL;
+
+ALTER TABLE challenge_submission
+    MODIFY COLUMN code TEXT NOT NULL;
+
+ALTER TABLE challenge_submission_comment
+    MODIFY COLUMN content TEXT NOT NULL;
