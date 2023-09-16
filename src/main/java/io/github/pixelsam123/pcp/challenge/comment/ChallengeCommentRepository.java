@@ -32,7 +32,7 @@ public class ChallengeCommentRepository {
                         + "u.name, "
                         + "u.points "
                         + "FROM challenge_comment cc JOIN user u ON cc.user_id = u.id "
-                        + "WHERE challenge_id = ?"
+                        + "WHERE challenge_id = ? ORDER BY cc.id DESC"
                 )
             ) {
                 statement.setLong(1, challengeId);

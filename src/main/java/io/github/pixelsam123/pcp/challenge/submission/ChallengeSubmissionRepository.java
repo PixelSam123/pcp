@@ -70,7 +70,7 @@ public class ChallengeSubmissionRepository {
                         + "u.name,"
                         + "u.points "
                         + "FROM challenge_submission cs JOIN user u ON cs.user_id = u.id "
-                        + "WHERE cs.challenge_id = ?"
+                        + "WHERE cs.challenge_id = ? ORDER BY cs.id DESC"
                 )
             ) {
                 statement.setLong(1, challengeId);
