@@ -110,7 +110,7 @@ public class UserRepository {
             try (
                 Connection c = dataSource.getConnection();
                 PreparedStatement statement = c.prepareStatement(
-                    "SELECT id, name, points FROM user"
+                    "SELECT id, name, points FROM user ORDER BY points DESC"
                 )
             ) {
                 List<UserBriefDto> list = new ArrayList<>();
