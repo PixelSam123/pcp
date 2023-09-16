@@ -217,7 +217,9 @@ public class ChallengeRepository {
                         + "c.completed_count, "
                         + "u.id, "
                         + "u.name, "
-                        + "u.points "
+                        + "u.points, "
+                        + "(SELECT COUNT(*) FROM challenge_vote cv WHERE cv.is_upvote = TRUE AND cv.challenge_id = c.id) upvote_count,"
+                        + "(SELECT COUNT(*) FROM challenge_vote cv WHERE cv.is_upvote = FALSE AND cv.challenge_id = c.id) downvote_count "
                         + "FROM challenge c JOIN user u ON c.user_id = u.id "
                         + "WHERE (? IS NULL OR u.name = ?) AND c.tier IN ("
                         + questionMarks.substring(0, questionMarks.length() - ", ".length())
@@ -247,7 +249,9 @@ public class ChallengeRepository {
                             res.getLong("u.id"),
                             res.getString("u.name"),
                             res.getInt("u.points")
-                        )
+                        ),
+                        res.getLong("upvote_count"),
+                        res.getLong("downvote_count")
                     ));
                 }
 
