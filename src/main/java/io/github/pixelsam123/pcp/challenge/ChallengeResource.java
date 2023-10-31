@@ -18,8 +18,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.resteasy.reactive.Separator;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Boolean.FALSE;
@@ -100,29 +100,15 @@ public class ChallengeResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<ChallengeBriefDto>> list(
-        @QueryParam("tiers") String tiers,
+        @QueryParam("tiers") @Separator(",") List<Integer> tiers,
         @QueryParam("username") String username,
-        @QueryParam("sort-by") String sortBy
+        @QueryParam("sort-by") ChallengeSort sortBy
     ) {
-        if (tiers == null) tiers = "1,2,3,4,5";
-        if (sortBy == null) sortBy = "newest";
-
-        if (tiers.isBlank()) {
-            throw new HttpException(
-                Response.Status.BAD_REQUEST,
-                "Please select at least one tier or remove the tiers query parameter."
-            );
-        }
-
-        List<Integer> tierList = Arrays.stream(tiers.split(",")).map(Integer::parseInt).toList();
-        ChallengeSort sort = switch (sortBy) {
-            case "oldest" -> ChallengeSort.OLDEST;
-            case "mostCompleted" -> ChallengeSort.MOST_COMPLETED;
-            case "leastCompleted" -> ChallengeSort.LEAST_COMPLETED;
-            default -> ChallengeSort.NEWEST;
-        };
-
-        return challengeRepository.list(tierList, username, sort);
+        return challengeRepository.list(
+            tiers == null ? List.of(1, 2, 3, 4, 5) : tiers,
+            username,
+            sortBy == null ? ChallengeSort.NEWEST : sortBy
+        );
     }
 
     @GET

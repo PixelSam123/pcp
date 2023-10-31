@@ -11,4 +11,14 @@ public enum ChallengeSort {
     ChallengeSort(String column, String orderType) {
         sql = "ORDER BY " + column + " " + orderType;
     }
+
+    @SuppressWarnings("unused")
+    public static ChallengeSort fromString(String s) {
+        return switch (s) {
+            case "oldest" -> ChallengeSort.OLDEST;
+            case "mostCompleted" -> ChallengeSort.MOST_COMPLETED;
+            case "leastCompleted" -> ChallengeSort.LEAST_COMPLETED;
+            default -> ChallengeSort.NEWEST;
+        };
+    }
 }
