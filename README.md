@@ -1,7 +1,9 @@
 # pcp
 
-Pixel Code Platform  
-Self-hostable coding challenges platform
+![pcp banner](https://raw.githubusercontent.com/PixelSam123/pcp/refs/heads/main/docs/pcp.webp)
+
+Welcome to the Pixel Code Platform family of projects. This is the web backend.  
+Pixel Code Platform is a self-hostable coding challenge platform. This backend is open to contribution!
 
 ---
 
