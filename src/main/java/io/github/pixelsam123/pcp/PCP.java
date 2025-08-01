@@ -10,7 +10,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
     info = @Info(
         title = "Pixel Code Platform",
         description = "Self-hostable coding courses/problems platform",
-        version = "1.0-SNAPSHOT"
+        version = "1.1-SNAPSHOT"
     )
 )
 public class PCP extends Application {

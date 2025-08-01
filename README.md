@@ -50,6 +50,7 @@ QUARKUS_HTTP_CORS_ORIGINS=
 QUARKUS_REST_CLIENT_CODE_EXEC_SERVER_URL=
 ```
 
+- For public key & sign key, view instructions at https://quarkus.io/guides/security-jwt
 - QUARKUS_DATASOURCE_DB_KIND can either be `mysql` or `mariadb`. `src/main/resources/db/changeLog.sql` is tested on those.
 - `QUARKUS_REST_CLIENT_CODE_EXEC_SERVER_URL` is an instance of either [coxecude](https://github.com/PixelSam123/coxecude) or [containexec](https://github.com/PixelSam123/containexec). You can also create your own code execution server that exposes an API similar to `coxecude`.
 

@@ -18,8 +18,8 @@ public class Utils {
      * @return are all uni items equal
      */
     public static Uni<Boolean> areUniItemsEqual(Uni<?>... unis) {
-        return Uni.combine().all().unis(unis).combinedWith(items -> {
-            Object firstItem = items.get(0);
+        return Uni.combine().all().unis(unis).with(items -> {
+            Object firstItem = items.getFirst();
 
             for (Object item : items) {
                 if (!item.equals(firstItem)) {
