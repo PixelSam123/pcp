@@ -7,8 +7,8 @@ Self-hostable coding challenges platform
 
 ## Frontends
 
-- [PixelSam123/pcp_frontend](https://github.com/PixelSam123/pcp_frontend)
-- [PixelSam123/pcp_frontend_web](https://github.com/PixelSam123/pcp_frontend_web)
+- [PixelSam123/pcp_frontend_web](https://github.com/PixelSam123/pcp_frontend_web) (Active)
+- [PixelSam123/pcp_frontend](https://github.com/PixelSam123/pcp_frontend) (Unmaintained)
 
 ## Status
 
