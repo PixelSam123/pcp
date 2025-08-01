@@ -125,18 +125,58 @@ public class ChallengeSubmissionResource {
     }
 
     @GET
+    @RolesAllowed({"User"})
     @Path("/challenge-name/{challengeName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<List<ChallengeSubmissionDto>> listByChallengeName(
-        @PathParam("challengeName") String challengeName
+        @PathParam("challengeName") String challengeName,
+        @Context SecurityContext ctx
     ) {
+        Uni<Long> userIdRetrieval = userRepository
+            .findIdByName(ctx.getUserPrincipal().getName())
+            .map(dbUser -> dbUser.orElseThrow(() -> new HttpException(
+                Response.Status.BAD_REQUEST,
+                ErrorMessages.CREDENTIALS_MISMATCH
+            )));
+
         Uni<Long> challengeIdRetrieval = challengeRepository
             .findIdByName(challengeName)
             .map(dbChallengeId -> dbChallengeId.orElseThrow(
                 () -> new NotFoundException("Challenge")
             ));
 
-        return challengeIdRetrieval.flatMap(challengeSubmissionRepository::listByChallengeId);
+        Uni<Long> challengeSubmissionCountForUserRetrieval = Uni
+            .combine()
+            .all()
+            .unis(userIdRetrieval, challengeIdRetrieval)
+            .asTuple()
+            .flatMap(Unchecked.function(tuple -> {
+                Long dbUserId = tuple.getItem1();
+                Long dbChallengeId = tuple.getItem2();
+
+                return challengeSubmissionRepository.countByChallengeIdAndUserId(
+                    dbChallengeId, dbUserId
+                );
+            }));
+
+        return Uni
+            .combine()
+            .all()
+            .unis(challengeIdRetrieval, challengeSubmissionCountForUserRetrieval)
+            .asTuple()
+            .flatMap(Unchecked.function(tuple -> {
+                Long dbChallengeId = tuple.getItem1();
+                Long dbSubmissionCountForUser = tuple.getItem2();
+
+                if (dbSubmissionCountForUser < 1) {
+                    throw new HttpException(
+                        Response.Status.FORBIDDEN,
+                        "You have to submit once first to view other users' results."
+                    );
+                }
+
+                return challengeSubmissionRepository.listByChallengeId(dbChallengeId);
+            }));
     }
 
     private int pointsForTier(int tier) {
