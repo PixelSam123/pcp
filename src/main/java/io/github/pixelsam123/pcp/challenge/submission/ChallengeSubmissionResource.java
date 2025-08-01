@@ -21,6 +21,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.List;
+import java.util.Optional;
 
 @Tag(
     name = "challenge-submissions",
@@ -132,50 +133,36 @@ public class ChallengeSubmissionResource {
         @PathParam("challengeName") String challengeName,
         @Context SecurityContext ctx
     ) {
-        Uni<Long> userIdRetrieval = userRepository
-            .findIdByName(ctx.getUserPrincipal().getName())
-            .map(dbUser -> dbUser.orElseThrow(() -> new HttpException(
-                Response.Status.BAD_REQUEST,
-                ErrorMessages.CREDENTIALS_MISMATCH
-            )));
+        Uni<Optional<Long>> userIdRetrieval =
+            userRepository.findIdByName(ctx.getUserPrincipal().getName());
 
-        Uni<Long> challengeIdRetrieval = challengeRepository
-            .findIdByName(challengeName)
-            .map(dbChallengeId -> dbChallengeId.orElseThrow(
-                () -> new NotFoundException("Challenge")
-            ));
+        Uni<Optional<Long>> challengeIdRetrieval = challengeRepository.findIdByName(challengeName);
 
-        Uni<Long> challengeSubmissionCountForUserRetrieval = Uni
+        return Uni
             .combine()
             .all()
             .unis(userIdRetrieval, challengeIdRetrieval)
             .asTuple()
             .flatMap(Unchecked.function(tuple -> {
-                Long dbUserId = tuple.getItem1();
-                Long dbChallengeId = tuple.getItem2();
+                Long dbUserId = tuple.getItem1().orElseThrow(() -> new HttpException(
+                    Response.Status.BAD_REQUEST,
+                    ErrorMessages.CREDENTIALS_MISMATCH
+                ));
+                Long dbChallengeId =
+                    tuple.getItem2().orElseThrow(() -> new NotFoundException("Challenge"));
 
-                return challengeSubmissionRepository.countByChallengeIdAndUserId(
-                    dbChallengeId, dbUserId
-                );
-            }));
+                return challengeSubmissionRepository
+                    .countByChallengeIdAndUserId(dbChallengeId, dbUserId)
+                    .flatMap(Unchecked.function(dbSubmissionCountForUser -> {
+                        if (dbSubmissionCountForUser < 1) {
+                            throw new HttpException(
+                                Response.Status.FORBIDDEN,
+                                "You have to submit once first to view other users' results."
+                            );
+                        }
 
-        return Uni
-            .combine()
-            .all()
-            .unis(challengeIdRetrieval, challengeSubmissionCountForUserRetrieval)
-            .asTuple()
-            .flatMap(Unchecked.function(tuple -> {
-                Long dbChallengeId = tuple.getItem1();
-                Long dbSubmissionCountForUser = tuple.getItem2();
-
-                if (dbSubmissionCountForUser < 1) {
-                    throw new HttpException(
-                        Response.Status.FORBIDDEN,
-                        "You have to submit once first to view other users' results."
-                    );
-                }
-
-                return challengeSubmissionRepository.listByChallengeId(dbChallengeId);
+                        return challengeSubmissionRepository.listByChallengeId(dbChallengeId);
+                    }));
             }));
     }
 
